@@ -76,26 +76,33 @@ public class JumpSession {
         int[] xzOffset = {-3, -2, 2, 3};
         int[] yOffset = {-1, 0, 1};
 
-        return from.add(
-                xzOffset[rng.nextInt(xzOffset.length)],
-                yOffset[rng.nextInt(yOffset.length)],
-                xzOffset[rng.nextInt(xzOffset.length)]
-        );
+        Location newLocation;
+        do {
+            newLocation = from.clone().add(
+                    xzOffset[rng.nextInt(xzOffset.length)],
+                    yOffset[rng.nextInt(yOffset.length)],
+                    xzOffset[rng.nextInt(xzOffset.length)]
+            );
 
+        } while (!isInBounds(newLocation));
+
+        return newLocation;
     }
 
     public void endSession() {
         currentBlock.setType(Material.AIR);
         nextBlock.setType(Material.AIR);
+        JumpNRun.getInstance().getJumpSessions().remove(player);
         player.teleport(returnLocation);
         player.sendMessage(String.format("You fell! You reached a score of %d", score));
     }
 
-    public int getDeathY() {
-        return (int) Math.min(currentBlock.getLocation().y(), nextBlock.getLocation().y())-1;
-    }
-
     public void checkNextJump() {
+        if (!isInBounds(player.getLocation(), 1)) {
+            endSession();
+            return;
+        }
+
         Location location = player.getLocation();
 
         if (nextBlock.equals(location.add(0,-1,0).getBlock())) {
@@ -112,6 +119,30 @@ public class JumpSession {
             );
             player.playSound(expSound);
         }
+    }
+
+    private boolean isInBounds(Location location, int margin) {
+        int minX = (int) Math.min( pos1.x(), pos2.x() ) - margin;
+        int maxX = (int) Math.max( pos1.x(), pos2.x() ) + margin;
+
+        //int minY = (int) Math.min(currentBlock.getLocation().y(), nextBlock.getLocation().y())-1;
+        int minY = (int) Math.min( pos1.y(), pos2.y() );
+        int maxY = (int) Math.max( pos1.y(), pos2.y() ) + margin;
+
+        int minZ = (int) Math.min( pos1.z(), pos2.z() ) - margin;
+        int maxZ = (int) Math.max( pos1.z(), pos2.z() ) + margin;
+
+        int playerX =  (int) location.x();
+        int playerY =  (int) location.y();
+        int playerZ = (int) location.z();
+
+        return maxX >= playerX && minX <= playerX
+                && maxY >= playerY && minY <= playerY
+                && maxZ >= playerZ && minZ <= playerZ;
+    }
+
+    private boolean isInBounds(Location location) {
+        return isInBounds(location, 0);
     }
 
 }

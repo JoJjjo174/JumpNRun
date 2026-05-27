@@ -22,13 +22,7 @@ public class MoveListener implements Listener {
         }
 
         JumpSession jumpSession = plugin.getJumpSessions().get(event.getPlayer());
-
-        if (jumpSession.getDeathY() >= event.getPlayer().getLocation().y()) {
-            jumpSession.endSession();
-            plugin.getJumpSessions().remove(event.getPlayer());
-        } else {
-            jumpSession.checkNextJump();
-        }
+        jumpSession.checkNextJump();
 
     }
 
