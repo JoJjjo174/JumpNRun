@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.util.Random;
 
@@ -71,21 +72,57 @@ public class JumpSession {
         nextBlock.setType(colour);
     }
 
+    private Vector generateEasyJump() {
+        int[] xzOffset = {-3, -2, 2, 3};
+        int[] yOffset = {-1, 0, 1};
+
+        Random rng = new Random();
+
+        return new Vector(
+                xzOffset[rng.nextInt(xzOffset.length)],
+                yOffset[rng.nextInt(yOffset.length)],
+                xzOffset[rng.nextInt(xzOffset.length)]
+        );
+    }
+
+    private Vector generateHardJump() {
+        int[][] jumps = {
+                {4,0,4},
+                {5,0,0},
+                {0,0,5},
+                {5,0,1},
+                {5,0,2},
+                {1,0,5},
+                {2,0,5}
+        };
+        int[] signs = {-1, 1};
+
+        Random rng = new Random();
+
+        int[] jump = jumps[rng.nextInt(jumps.length)];
+
+        return new Vector(
+                jump[0] * signs[rng.nextInt(signs.length)],
+                jump[1] * signs[rng.nextInt(signs.length)],
+                jump[2] * signs[rng.nextInt(signs.length)]
+        );
+    }
+
     private Location generateLocation(Location from) {
         Random rng = new Random();
 
-        int[] xzOffset = {-3, -2, 2, 3};
-        int[] yOffset = {-2, -1, 0, 1};
+        double hardChance = Math.max(0.333 - Math.exp(-0.05*score), 0);
+        boolean hardJump = hardChance >= rng.nextDouble();
 
+        int tries = 0;
         Location newLocation;
         do {
             newLocation = from.clone().add(
-                    xzOffset[rng.nextInt(xzOffset.length)],
-                    yOffset[rng.nextInt(yOffset.length)],
-                    xzOffset[rng.nextInt(xzOffset.length)]
+                    hardJump ? generateHardJump() : generateEasyJump()
             );
+            tries++;
 
-        } while (!isInBounds(newLocation));
+        } while (!isInBounds(newLocation) && tries < 100);
 
         return newLocation;
     }
@@ -99,7 +136,7 @@ public class JumpSession {
     }
 
     public void checkNextJump() {
-        if (!isInBounds(player.getLocation(), 1)) {
+        if (!isInBounds(player.getLocation(), 2)) {
             endSession();
             return;
         }
