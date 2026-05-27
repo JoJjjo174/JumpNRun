@@ -38,9 +38,12 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
             commandSender.sendMessage("Set location");
 
         } else {
+            if (plugin.getJumpSessions().containsKey(player)) {
+                player.sendMessage("You already started a Jump & Run");
+                return true;
+            }
 
-            JumpSession jumpSession = new JumpSession(player);
-
+            new JumpSession(player);
         }
 
         return true;

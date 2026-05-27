@@ -5,9 +5,7 @@ import net.kyori.adventure.sound.Sound;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import java.util.Random;
 
@@ -16,6 +14,8 @@ public class JumpSession {
     private Player player;
     private Location returnLocation;
     private int score;
+
+    private Material colour;
 
     private Location pos1;
     private Location pos2;
@@ -28,12 +28,13 @@ public class JumpSession {
         this.returnLocation = player.getLocation();
 
         JumpNRun plugin = JumpNRun.getInstance();
+        colour = plugin.getRandomColour();
 
         pos1 = plugin.getConfig().getLocation("pos1");
         pos2 = plugin.getConfig().getLocation("pos2");
 
         currentBlock = generateStartingLocation().getBlock();
-        currentBlock.setType(Material.WHITE_WOOL);
+        currentBlock.setType(colour);
 
         generateNextBlock();
 
@@ -67,14 +68,14 @@ public class JumpSession {
 
     private void generateNextBlock() {
         nextBlock = pos1.getWorld().getBlockAt(generateLocation(currentBlock.getLocation()));
-        nextBlock.setType(Material.WHITE_WOOL);
+        nextBlock.setType(colour);
     }
 
     private Location generateLocation(Location from) {
         Random rng = new Random();
 
         int[] xzOffset = {-3, -2, 2, 3};
-        int[] yOffset = {-1, 0, 1};
+        int[] yOffset = {-2, -1, 0, 1};
 
         Location newLocation;
         do {
