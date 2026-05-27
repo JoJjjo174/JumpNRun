@@ -72,7 +72,7 @@ public class JumpSession {
 
         return from.add(
                 xzOffset[rng.nextInt(xzOffset.length)],
-                yOffset[rng.nextInt(xzOffset.length)],
+                yOffset[rng.nextInt(yOffset.length)],
                 xzOffset[rng.nextInt(xzOffset.length)]
         );
 
@@ -82,6 +82,10 @@ public class JumpSession {
         currentBlock.setType(Material.AIR);
         nextBlock.setType(Material.AIR);
         player.teleport(returnLocation);
+    }
+
+    public int getDeathY() {
+        return (int) Math.min(currentBlock.getLocation().y(), nextBlock.getLocation().y())-1;
     }
 
 }

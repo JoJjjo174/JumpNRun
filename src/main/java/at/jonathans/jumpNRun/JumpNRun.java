@@ -1,6 +1,8 @@
 package at.jonathans.jumpNRun;
 
 import at.jonathans.jumpNRun.commands.JumpNRunCommand;
+import at.jonathans.jumpNRun.listeners.LeaveListener;
+import at.jonathans.jumpNRun.listeners.MoveListener;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -14,8 +16,12 @@ public final class JumpNRun extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        jumpSessions = new HashMap<>();
 
         saveDefaultConfig();
+
+        getServer().getPluginManager().registerEvents(new MoveListener(), this);
+        getServer().getPluginManager().registerEvents(new LeaveListener(), this);
 
         getCommand("jumpnrun").setExecutor(new JumpNRunCommand());
 
