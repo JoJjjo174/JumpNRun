@@ -1,0 +1,6 @@
+name: JumpNRun
+version: '${version}'
+
+main: at.jonathans.jumpNRun.JumpNRun
+api-version: '26.1.2'
+load: POSTWORLD
