@@ -4,7 +4,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class JumpNRun extends JavaPlugin {
 
-    private JumpNRun instance;
+    private static JumpNRun instance;
 
     @Override
     public void onEnable() {
@@ -19,7 +19,7 @@ public final class JumpNRun extends JavaPlugin {
         // Plugin shutdown logic
     }
 
-    public JumpNRun getInstance() {
+    public static JumpNRun getInstance() {
         return instance;
     }
 }
