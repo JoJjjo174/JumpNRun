@@ -33,6 +33,7 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
             }
 
             plugin.getConfig().set(strings[0].toLowerCase(), player.getLocation());
+            plugin.saveConfig();
 
             commandSender.sendMessage("Set location");
 

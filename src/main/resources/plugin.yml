@@ -9,3 +9,7 @@ permissions:
   jumpnrun.admin:
     description: Admin commands
     default: op
+
+commands:
+  jumpnrun:
+    usage: /<command>

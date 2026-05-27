@@ -23,7 +23,7 @@ public class JumpSession {
         this.player = player;
         this.returnLocation = player.getLocation();
 
-        Plugin plugin = JumpNRun.getInstance();
+        JumpNRun plugin = JumpNRun.getInstance();
 
         pos1 = plugin.getConfig().getLocation("pos1");
         pos2 = plugin.getConfig().getLocation("pos2");
@@ -36,6 +36,8 @@ public class JumpSession {
         player.teleport(
                 currentBlock.getLocation().add(0,1,0)
         );
+
+        plugin.getJumpSessions().put(player, this);
     }
 
     private Location generateStartingLocation() {
@@ -65,16 +67,15 @@ public class JumpSession {
     private Location generateLocation(Location from) {
         Random rng = new Random();
 
-        Location newLocation = from.clone();
-        while (from.equals(newLocation)) {
-            newLocation = from.add(
-                    rng.nextInt(-3, 4),
-                    rng.nextInt(-1, 2),
-                    rng.nextInt(-3, 4)
-            );
-        }
+        int[] xzOffset = {-3, -2, 2, 3};
+        int[] yOffset = {-1, 0, 1};
 
-        return newLocation;
+        return from.add(
+                xzOffset[rng.nextInt(xzOffset.length)],
+                yOffset[rng.nextInt(xzOffset.length)],
+                xzOffset[rng.nextInt(xzOffset.length)]
+        );
+
     }
 
     public void endSession() {
