@@ -26,6 +26,8 @@ public class MoveListener implements Listener {
         if (jumpSession.getDeathY() >= event.getPlayer().getLocation().y()) {
             jumpSession.endSession();
             plugin.getJumpSessions().remove(event.getPlayer());
+        } else {
+            jumpSession.checkNextJump();
         }
 
     }

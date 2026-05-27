@@ -1,8 +1,11 @@
 package at.jonathans.jumpNRun;
 
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -12,6 +15,7 @@ public class JumpSession {
 
     private Player player;
     private Location returnLocation;
+    private int score;
 
     private Location pos1;
     private Location pos2;
@@ -36,6 +40,8 @@ public class JumpSession {
         player.teleport(
                 currentBlock.getLocation().add(0,1,0)
         );
+
+        score = 0;
 
         plugin.getJumpSessions().put(player, this);
     }
@@ -82,10 +88,30 @@ public class JumpSession {
         currentBlock.setType(Material.AIR);
         nextBlock.setType(Material.AIR);
         player.teleport(returnLocation);
+        player.sendMessage(String.format("You fell! You reached a score of %d", score));
     }
 
     public int getDeathY() {
         return (int) Math.min(currentBlock.getLocation().y(), nextBlock.getLocation().y())-1;
+    }
+
+    public void checkNextJump() {
+        Location location = player.getLocation();
+
+        if (nextBlock.equals(location.add(0,-1,0).getBlock())) {
+            currentBlock.setType(Material.AIR);
+            currentBlock = nextBlock;
+            generateNextBlock();
+            score++;
+
+            Sound expSound = Sound.sound(
+                    Key.key("entity.experience_orb.pickup"),
+                    Sound.Source.PLAYER,
+                    1.0f,
+                    1.0f
+            );
+            player.playSound(expSound);
+        }
     }
 
 }
