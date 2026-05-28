@@ -9,6 +9,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.xml.crypto.Data;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -16,6 +18,7 @@ public final class JumpNRun extends JavaPlugin {
 
     private static JumpNRun instance;
     private HashMap<Player, JumpSession> jumpSessions;
+    private Database database;
 
     @Override
     public void onEnable() {
@@ -30,11 +33,13 @@ public final class JumpNRun extends JavaPlugin {
 
         getCommand("jumpnrun").setExecutor(new JumpNRunCommand());
 
+        File dataBaseFile = new File(getDataFolder(), "data.db");
+        database = new Database(dataBaseFile);
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        database.closeConnection();
     }
 
     public static JumpNRun getInstance() {
@@ -43,6 +48,10 @@ public final class JumpNRun extends JavaPlugin {
 
     public HashMap<Player, JumpSession> getJumpSessions() {
         return jumpSessions;
+    }
+
+    public Database getDatabase() {
+        return database;
     }
 
     public DyeColor getRandomColour() {
