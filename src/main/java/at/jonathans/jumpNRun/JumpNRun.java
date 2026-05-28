@@ -4,6 +4,7 @@ import at.jonathans.jumpNRun.commands.JumpNRunCommand;
 import at.jonathans.jumpNRun.listeners.DeathListener;
 import at.jonathans.jumpNRun.listeners.LeaveListener;
 import at.jonathans.jumpNRun.listeners.MoveListener;
+import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -15,22 +16,11 @@ public final class JumpNRun extends JavaPlugin {
 
     private static JumpNRun instance;
     private HashMap<Player, JumpSession> jumpSessions;
-    private Material[] colourPool;
 
     @Override
     public void onEnable() {
         instance = this;
         jumpSessions = new HashMap<>();
-        colourPool = new Material[]{
-                Material.WHITE_WOOL,
-                Material.RED_WOOL,
-                Material.LIME_WOOL,
-                Material.BLUE_WOOL,
-                Material.GRAY_WOOL,
-                Material.PINK_WOOL,
-                Material.YELLOW_WOOL,
-                Material.BROWN_WOOL
-        };
 
         saveDefaultConfig();
 
@@ -55,8 +45,9 @@ public final class JumpNRun extends JavaPlugin {
         return jumpSessions;
     }
 
-    public Material getRandomColour() {
+    public DyeColor getRandomColour() {
         Random rng = new Random();
-        return colourPool[rng.nextInt(colourPool.length)];
+        DyeColor[] colours =  DyeColor.values();
+        return colours[rng.nextInt(colours.length)];
     }
 }

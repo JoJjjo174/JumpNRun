@@ -2,10 +2,14 @@ package at.jonathans.jumpNRun;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.BlockDisplay;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Shulker;
 import org.bukkit.util.Vector;
 
 import java.util.Random;
@@ -16,13 +20,15 @@ public class JumpSession {
     private Location returnLocation;
     private int score;
 
-    private Material colour;
+    private DyeColor colour;
+    private Material colourMaterial;
 
     private Location pos1;
     private Location pos2;
 
     private Block currentBlock;
     private Block nextBlock;
+    private BlockDisplay hologramBlock;
 
     public JumpSession(Player player) {
         this.player = player;
@@ -30,14 +36,21 @@ public class JumpSession {
 
         JumpNRun plugin = JumpNRun.getInstance();
         colour = plugin.getRandomColour();
+        colourMaterial = getWoolFromColor(colour);
 
         pos1 = plugin.getConfig().getLocation("pos1");
         pos2 = plugin.getConfig().getLocation("pos2");
 
         currentBlock = generateStartingLocation().getBlock();
-        currentBlock.setType(colour);
+        currentBlock.setType(colourMaterial);
 
-        generateNextBlock();
+        nextBlock = pos1.getWorld().getBlockAt( generateLocation(currentBlock.getLocation()) );
+        nextBlock.setType(colourMaterial);
+
+        hologramBlock = (BlockDisplay) pos1.getWorld().spawnEntity(generateLocation(nextBlock.getLocation()), EntityType.BLOCK_DISPLAY);
+        hologramBlock.setBlock(Material.GLASS.createBlockData());
+        hologramBlock.setGlowing(true);
+        hologramBlock.setGlowColorOverride(colour.getColor());
 
         player.teleport(
                 currentBlock.getLocation().add(0,1,0)
@@ -68,8 +81,10 @@ public class JumpSession {
     }
 
     private void generateNextBlock() {
-        nextBlock = pos1.getWorld().getBlockAt(generateLocation(currentBlock.getLocation()));
-        nextBlock.setType(colour);
+        nextBlock = pos1.getWorld().getBlockAt(hologramBlock.getLocation());
+        nextBlock.setType(colourMaterial);
+
+        hologramBlock.teleport(generateLocation(nextBlock.getLocation()));
     }
 
     private Vector generateEasyJump() {
@@ -130,6 +145,8 @@ public class JumpSession {
     public void endSession() {
         currentBlock.setType(Material.AIR);
         nextBlock.setType(Material.AIR);
+        hologramBlock.remove();
+
         JumpNRun.getInstance().getJumpSessions().remove(player);
         player.teleport(returnLocation);
         player.sendMessage(String.format("You fell! You reached a score of %d", score));
@@ -181,6 +198,10 @@ public class JumpSession {
 
     private boolean isInBounds(Location location) {
         return isInBounds(location, 0);
+    }
+
+    private static Material getWoolFromColor(DyeColor color) {
+        return Material.valueOf(color.name() + "_WOOL");
     }
 
 }
