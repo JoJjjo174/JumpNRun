@@ -149,7 +149,17 @@ public class JumpSession {
 
         JumpNRun.getInstance().getJumpSessions().remove(player);
         player.teleport(returnLocation);
-        player.sendMessage(String.format("You fell! You reached a score of %d", score));
+
+        JumpNRun plugin = JumpNRun.getInstance();
+
+        if (plugin.getDatabase().brokeHighscore(player, score)) {
+            player.sendMessage(String.format("Congratulations! You broke your highscore: %d", score));
+
+        } else {
+            int highscore = plugin.getDatabase().getHighscore(player);
+            player.sendMessage(String.format("You fell! You reached a score of: %d\nYour highscore is: %d", score, highscore));
+        }
+
     }
 
     public void checkNextJump() {

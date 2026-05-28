@@ -56,7 +56,7 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
                         return true;
                     }
 
-                    int highscore = plugin.getDatabase().getHighscore(targetPlayer.getUniqueId());
+                    int highscore = plugin.getDatabase().getHighscore(targetPlayer);
                     if (highscore == -1) {
                         commandSender.sendMessage("This player doesn't have a highscore yet!");
                         return true;

@@ -39,6 +39,10 @@ public final class JumpNRun extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        for (JumpSession session : jumpSessions.values()) {
+            session.endSession();
+        }
+
         database.closeConnection();
     }
 

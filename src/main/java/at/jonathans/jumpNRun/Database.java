@@ -1,5 +1,7 @@
 package at.jonathans.jumpNRun;
 
+import org.bukkit.entity.Player;
+
 import java.io.File;
 import java.sql.*;
 import java.util.HashMap;
@@ -34,10 +36,44 @@ public class Database {
         }
     }
 
-    public int getHighscore(UUID uuid) {
+    public boolean brokeHighscore(Player player, int score) {
+        UUID uuid = player.getUniqueId();
+        int oldHighscore = getHighscore(player);
+        if (oldHighscore >= score) {
+            return false;
+        }
+
+        cache.put(uuid, score);
+
+        try {
+            if (oldHighscore == -1) {
+                String sql = "INSERT INTO highscores (uuid, score) VALUES (?, ?);";
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1, uuid.toString());
+                statement.setInt(2, score);
+
+                statement.executeUpdate();
+            } else {
+                String sql = "UPDATE highscores SET score = ? WHERE uuid = ?;";
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setInt(1, score);
+                statement.setString(2, uuid.toString());
+
+                statement.executeUpdate();
+            }
+
+        } catch (SQLException exception) {
+            JumpNRun.getInstance().getLogger().severe("Failed to update highscore");
+        }
+
+        return true;
+    }
+
+    public int getHighscore(Player player) {
+        UUID uuid = player.getUniqueId();
         if (!cache.containsKey(uuid)) {
             try {
-                String sql = "SELECT score FROM highscores WHERE uuid = ? LIMIT 1";
+                String sql = "SELECT score FROM highscores WHERE uuid = ? LIMIT 1;";
                 PreparedStatement statement = connection.prepareStatement(sql);
                 statement.setString(1, uuid.toString());
                 ResultSet results = statement.executeQuery();
