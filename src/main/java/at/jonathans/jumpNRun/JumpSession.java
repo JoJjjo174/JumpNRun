@@ -6,10 +6,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.BlockDisplay;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Shulker;
+import org.bukkit.entity.*;
 import org.bukkit.util.Vector;
 
 import java.util.Random;
@@ -28,7 +25,7 @@ public class JumpSession {
 
     private Block currentBlock;
     private Block nextBlock;
-    private BlockDisplay hologramBlock;
+    private Entity hologramBlock;
 
     public JumpSession(Player player) {
         this.player = player;
@@ -36,7 +33,7 @@ public class JumpSession {
 
         JumpNRun plugin = JumpNRun.getInstance();
         colour = plugin.getRandomColour();
-        colourMaterial = getWoolFromColor(colour);
+        colourMaterial = getWoolFromColour(colour);
 
         pos1 = plugin.getConfig().getLocation("pos1");
         pos2 = plugin.getConfig().getLocation("pos2");
@@ -47,10 +44,7 @@ public class JumpSession {
         nextBlock = pos1.getWorld().getBlockAt( generateLocation(currentBlock.getLocation()) );
         nextBlock.setType(colourMaterial);
 
-        hologramBlock = (BlockDisplay) pos1.getWorld().spawnEntity(generateLocation(nextBlock.getLocation()), EntityType.BLOCK_DISPLAY);
-        hologramBlock.setBlock(Material.GLASS.createBlockData());
-        hologramBlock.setGlowing(true);
-        hologramBlock.setGlowColorOverride(colour.getColor());
+        hologramBlock = createHologram(generateLocation(nextBlock.getLocation()), colour);
 
         player.teleport(
                 currentBlock.getLocation().add(0,1,0)
@@ -137,7 +131,7 @@ public class JumpSession {
             );
             tries++;
 
-        } while (!isInBounds(newLocation) && tries < 100);
+        } while ((!pos1.getWorld().getBlockAt(newLocation).getType().equals(Material.AIR) || !isInBounds(newLocation)) && tries < 100);
 
         return newLocation;
     }
@@ -224,8 +218,18 @@ public class JumpSession {
                 && maxZ >= locZ && minZ <= locZ;
     }
 
-    private static Material getWoolFromColor(DyeColor color) {
+    private static Material getWoolFromColour(DyeColor color) {
         return Material.valueOf(color.name() + "_WOOL");
+    }
+
+    private Entity createHologram(Location location, DyeColor colour) {
+        BlockDisplay hologram = (BlockDisplay) pos1.getWorld().spawnEntity(location.toBlockLocation(), EntityType.BLOCK_DISPLAY);
+
+        hologram.setBlock(Material.GLASS.createBlockData());
+        hologram.setGlowing(true);
+        hologram.setGlowColorOverride(colour.getColor());
+
+        return hologram;
     }
 
 }

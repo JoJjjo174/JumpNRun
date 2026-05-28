@@ -3,6 +3,7 @@ package at.jonathans.jumpNRun.commands;
 import at.jonathans.jumpNRun.JumpNRun;
 import at.jonathans.jumpNRun.JumpSession;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,7 +12,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class JumpNRunCommand implements CommandExecutor, TabExecutor {
@@ -65,6 +68,33 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
                     commandSender.sendMessage(String.format("Highscore: %d", highscore));
                     return true;
 
+                case "leaderboard":
+                    LinkedHashMap<OfflinePlayer, Integer> leaderboard = plugin.getDatabase().getLeaderboard();
+
+                    StringBuilder leaderboardStringBuilder = new StringBuilder();
+
+                    int i = 1;
+                    for (OfflinePlayer leaderboardPlayer : leaderboard.keySet()) {
+                        int leaderboardPlayerScore = leaderboard.get(leaderboardPlayer);
+
+                        leaderboardStringBuilder.append(i);
+                        leaderboardStringBuilder.append(". ");
+                        leaderboardStringBuilder.append(leaderboardPlayer.getName());
+                        leaderboardStringBuilder.append(" (");
+                        leaderboardStringBuilder.append(leaderboardPlayerScore);
+                        leaderboardStringBuilder.append(")\n");
+
+                        i++;
+                    }
+
+                    if (leaderboardStringBuilder.isEmpty()) {
+                        commandSender.sendMessage("No people in leaderboard");
+                        return true;
+                    }
+
+                    commandSender.sendMessage(leaderboardStringBuilder.toString());
+                    return true;
+
                 default:
                     break;
             }
@@ -89,6 +119,7 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
 
             argumentList.add("play");
             argumentList.add("highscore");
+            argumentList.add("leaderboard");
 
             if ((commandSender.hasPermission("jumpnrun.admin"))) {
                 argumentList.add("pos1");

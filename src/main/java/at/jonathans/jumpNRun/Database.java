@@ -1,10 +1,14 @@
 package at.jonathans.jumpNRun;
 
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.UUID;
 
 public class Database {
@@ -91,6 +95,30 @@ public class Database {
         }
 
         return cache.get(uuid);
+    }
+
+    public LinkedHashMap<OfflinePlayer, Integer> getLeaderboard() {
+        try {
+            String sql = "SELECT uuid, score FROM highscores ORDER BY score DESC LIMIT 10;";
+            Statement statement = connection.createStatement();
+            ResultSet results = statement.executeQuery(sql);
+
+            LinkedHashMap<OfflinePlayer, Integer> leaderboard = new LinkedHashMap<>();
+
+            while (results.next()) {
+                OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(results.getString("uuid")));
+                Integer score = results.getInt("score");
+
+                leaderboard.put(player, score);
+            }
+
+            return leaderboard;
+
+        } catch (SQLException exception) {
+            JumpNRun.getInstance().getLogger().severe("Failed to fetch leaderboard from database");
+            return null;
+        }
+
     }
 
 }
