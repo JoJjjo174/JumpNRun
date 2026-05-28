@@ -153,7 +153,7 @@ public class JumpSession {
     }
 
     public void checkNextJump() {
-        if (!isInBounds(player.getLocation(), 2)) {
+        if (!isInPlayerBounds(player.getLocation())) {
             endSession();
             return;
         }
@@ -176,28 +176,42 @@ public class JumpSession {
         }
     }
 
-    private boolean isInBounds(Location location, int margin) {
-        int minX = (int) Math.min( pos1.x(), pos2.x() ) - margin;
-        int maxX = (int) Math.max( pos1.x(), pos2.x() ) + margin;
+    private boolean isInBounds(Location location) {
+        int minX = (int) Math.min( pos1.x(), pos2.x() );
+        int maxX = (int) Math.max( pos1.x(), pos2.x() );
 
-        //int minY = (int) Math.min(currentBlock.getLocation().y(), nextBlock.getLocation().y())-1;
         int minY = (int) Math.min( pos1.y(), pos2.y() );
-        int maxY = (int) Math.max( pos1.y(), pos2.y() ) + margin;
+        int maxY = (int) Math.max( pos1.y(), pos2.y() );
 
-        int minZ = (int) Math.min( pos1.z(), pos2.z() ) - margin;
-        int maxZ = (int) Math.max( pos1.z(), pos2.z() ) + margin;
+        int minZ = (int) Math.min( pos1.z(), pos2.z() );
+        int maxZ = (int) Math.max( pos1.z(), pos2.z() );
 
-        int playerX =  (int) location.x();
-        int playerY =  (int) location.y();
-        int playerZ = (int) location.z();
+        int locX =  (int) location.x();
+        int locY =  (int) location.y();
+        int locZ = (int) location.z();
 
-        return maxX >= playerX && minX <= playerX
-                && maxY >= playerY && minY <= playerY
-                && maxZ >= playerZ && minZ <= playerZ;
+        return maxX >= locX && minX <= locX
+                && maxY >= locY && minY <= locY
+                && maxZ >= locZ && minZ <= locZ;
     }
 
-    private boolean isInBounds(Location location) {
-        return isInBounds(location, 0);
+    private boolean isInPlayerBounds(Location location) {
+        int minX = (int) Math.min( currentBlock.getLocation().x(), nextBlock.getLocation().x() ) - 3;
+        int maxX = (int) Math.max( currentBlock.getLocation().x(), nextBlock.getLocation().x() ) + 3;
+
+        int minY = (int) Math.min( currentBlock.getLocation().y(), nextBlock.getLocation().y() ) - 1;
+        int maxY = (int) Math.max( currentBlock.getLocation().y(), nextBlock.getLocation().y() ) + 3;
+
+        int minZ = (int) Math.min( currentBlock.getLocation().z(), nextBlock.getLocation().z() ) - 3;
+        int maxZ = (int) Math.max( currentBlock.getLocation().z(), nextBlock.getLocation().z() ) + 3;
+
+        int locX =  (int) location.x();
+        int locY =  (int) location.y();
+        int locZ = (int) location.z();
+
+        return maxX >= locX && minX <= locX
+                && maxY >= locY && minY <= locY
+                && maxZ >= locZ && minZ <= locZ;
     }
 
     private static Material getWoolFromColor(DyeColor color) {
