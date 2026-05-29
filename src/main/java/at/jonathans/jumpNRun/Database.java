@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.sql.*;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.UUID;
@@ -15,9 +15,12 @@ public class Database {
 
     private Connection connection;
     private HashMap<UUID, Integer> cache;
+    private LinkedHashMap<OfflinePlayer, Integer> leaderboardCache;
+    private Instant leaderboardCacheAge;
 
     public Database(File dataBaseFile) {
         cache = new HashMap<>();
+        leaderboardCacheAge = Instant.ofEpochSecond(0);
 
         try {
             String url = "jdbc:sqlite:" + dataBaseFile.getAbsolutePath();
@@ -73,7 +76,11 @@ public class Database {
         return true;
     }
 
-    public int getHighscore(Player player) {
+    public int getHighscore(OfflinePlayer player) {
+        if (cache.size() >= 1000) {
+            cache.clear();
+        }
+
         UUID uuid = player.getUniqueId();
         if (!cache.containsKey(uuid)) {
             try {
@@ -98,27 +105,31 @@ public class Database {
     }
 
     public LinkedHashMap<OfflinePlayer, Integer> getLeaderboard() {
-        try {
-            String sql = "SELECT uuid, score FROM highscores ORDER BY score DESC LIMIT 10;";
-            Statement statement = connection.createStatement();
-            ResultSet results = statement.executeQuery(sql);
+        if (Instant.now().isAfter(leaderboardCacheAge.plusSeconds(900))) {
+            try {
+                String sql = "SELECT uuid, score FROM highscores ORDER BY score DESC LIMIT 10;";
+                Statement statement = connection.createStatement();
+                ResultSet results = statement.executeQuery(sql);
 
-            LinkedHashMap<OfflinePlayer, Integer> leaderboard = new LinkedHashMap<>();
+                LinkedHashMap<OfflinePlayer, Integer> leaderboard = new LinkedHashMap<>();
 
-            while (results.next()) {
-                OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(results.getString("uuid")));
-                Integer score = results.getInt("score");
+                while (results.next()) {
+                    OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(results.getString("uuid")));
+                    Integer score = results.getInt("score");
 
-                leaderboard.put(player, score);
+                    cache.put(player.getUniqueId(), score);
+                    leaderboard.put(player, score);
+                }
+
+                leaderboardCache = leaderboard;
+                leaderboardCacheAge = Instant.now();
+
+            } catch (SQLException exception) {
+                JumpNRun.getInstance().getLogger().severe("Failed to fetch leaderboard from database");
             }
-
-            return leaderboard;
-
-        } catch (SQLException exception) {
-            JumpNRun.getInstance().getLogger().severe("Failed to fetch leaderboard from database");
-            return null;
         }
 
+        return leaderboardCache;
     }
 
 }

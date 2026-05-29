@@ -47,16 +47,11 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
                     return true;
 
                 case "highscore":
-                    Player targetPlayer;
+                    OfflinePlayer targetPlayer;
                     if (strings.length >= 2) {
-                        targetPlayer = Bukkit.getPlayer(strings[1]);
+                        targetPlayer = Bukkit.getOfflinePlayer(strings[1]);
                     } else {
                         targetPlayer = player;
-                    }
-
-                    if (targetPlayer == null) {
-                        commandSender.sendMessage("This player has never been on the server");
-                        return true;
                     }
 
                     int highscore = plugin.getDatabase().getHighscore(targetPlayer);
