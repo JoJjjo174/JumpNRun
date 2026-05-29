@@ -15,6 +15,7 @@ public class JumpSession {
 
     private Player player;
     private Location returnLocation;
+    private int originalFoodLevel;
     private int score;
 
     private DyeColor colour;
@@ -30,6 +31,7 @@ public class JumpSession {
     public JumpSession(Player player) {
         this.player = player;
         this.returnLocation = player.getLocation();
+        this.originalFoodLevel = player.getFoodLevel();
 
         JumpNRun plugin = JumpNRun.getInstance();
         colour = plugin.getRandomColour();
@@ -49,6 +51,7 @@ public class JumpSession {
         player.teleport(
                 currentBlock.getLocation().add(0,1,0)
         );
+        player.setFoodLevel(20);
 
         score = 0;
 
@@ -143,6 +146,7 @@ public class JumpSession {
 
         JumpNRun.getInstance().getJumpSessions().remove(player);
         player.teleport(returnLocation);
+        player.setFoodLevel(originalFoodLevel);
 
         JumpNRun plugin = JumpNRun.getInstance();
 

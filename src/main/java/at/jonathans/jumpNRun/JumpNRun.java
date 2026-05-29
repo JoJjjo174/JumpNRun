@@ -2,6 +2,7 @@ package at.jonathans.jumpNRun;
 
 import at.jonathans.jumpNRun.commands.JumpNRunCommand;
 import at.jonathans.jumpNRun.listeners.DeathListener;
+import at.jonathans.jumpNRun.listeners.HungerListener;
 import at.jonathans.jumpNRun.listeners.LeaveListener;
 import at.jonathans.jumpNRun.listeners.MoveListener;
 import org.bukkit.DyeColor;
@@ -30,6 +31,7 @@ public final class JumpNRun extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new MoveListener(), this);
         getServer().getPluginManager().registerEvents(new LeaveListener(), this);
         getServer().getPluginManager().registerEvents(new DeathListener(), this);
+        getServer().getPluginManager().registerEvents(new HungerListener(), this);
 
         getCommand("jumpnrun").setExecutor(new JumpNRunCommand());
 
