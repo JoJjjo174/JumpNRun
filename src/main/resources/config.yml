@@ -11,9 +11,6 @@ disable-potions: true
 # Disables Ender Pearls inside the Jump & Run area
 disable-ender-pearls: true
 
-# Disables Wind Charges inside the Jump & Run area
-disable-wind-charges: true
-
 # ------------------------------ DO NOT manually change values below this line ------------------------------
 
 pos1: null

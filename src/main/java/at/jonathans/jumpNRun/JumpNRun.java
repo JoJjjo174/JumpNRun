@@ -3,11 +3,9 @@ package at.jonathans.jumpNRun;
 import at.jonathans.jumpNRun.commands.JumpNRunCommand;
 import at.jonathans.jumpNRun.listeners.*;
 import org.bukkit.DyeColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.xml.crypto.Data;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Random;
@@ -31,6 +29,7 @@ public final class JumpNRun extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new HungerListener(), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
         getServer().getPluginManager().registerEvents(new BlockPlaceListener(), this);
+        getServer().getPluginManager().registerEvents(new EnderPearlListener(), this);
 
 
         getCommand("jumpnrun").setExecutor(new JumpNRunCommand());
