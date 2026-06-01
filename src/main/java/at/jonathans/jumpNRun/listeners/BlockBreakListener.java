@@ -11,7 +11,7 @@ public class BlockBreakListener implements Listener {
 
     @EventHandler
     public void onBlockBroken(BlockBreakEvent event) {
-        if (JumpNRun.getInstance().getConfig().getBoolean("manipulate-blocks")) {
+        if (!JumpNRun.getInstance().getConfig().getBoolean("protect-blocks")) {
             return;
         }
 

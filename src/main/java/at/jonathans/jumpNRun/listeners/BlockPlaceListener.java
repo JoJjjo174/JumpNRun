@@ -11,7 +11,7 @@ public class BlockPlaceListener implements Listener {
 
     @EventHandler
     public void onBlockPlaced(BlockPlaceEvent event) {
-        if (JumpNRun.getInstance().getConfig().getBoolean("manipulate-blocks")) {
+        if (!JumpNRun.getInstance().getConfig().getBoolean("protect-blocks")) {
             return;
         }
 

@@ -1,2 +1,12 @@
-manipulate-blocks: false  # Allow blocks to be placed and destroyed in the Jump & Run Area
-disable-hunger: true      # Disables hunger while in Jump & Run
+
+# Prevent Players from breaking and placing blocks in the Jump & Run area
+protect-blocks: true
+
+# Disable hunger while in Jump & Run
+disable-hunger: true
+
+# ------------------------------ DO NOT manually change values below this line ------------------------------
+
+pos1: null
+pos2: null
+config-version: 0
