@@ -15,7 +15,7 @@ public class Database {
 
     private Connection connection;
     private HashMap<UUID, Integer> cache;
-    private LinkedHashMap<OfflinePlayer, Integer> leaderboardCache;
+    private LinkedHashMap<UUID, Integer> leaderboardCache;
     private Instant leaderboardCacheAge;
 
     public Database(File dataBaseFile) {
@@ -111,14 +111,14 @@ public class Database {
                 Statement statement = connection.createStatement();
                 ResultSet results = statement.executeQuery(sql);
 
-                LinkedHashMap<OfflinePlayer, Integer> leaderboard = new LinkedHashMap<>();
+                LinkedHashMap<UUID, Integer> leaderboard = new LinkedHashMap<>();
 
                 while (results.next()) {
-                    OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(results.getString("uuid")));
+                    UUID uuid = UUID.fromString(results.getString("uuid"));
                     Integer score = results.getInt("score");
 
-                    cache.put(player.getUniqueId(), score);
-                    leaderboard.put(player, score);
+                    cache.put(uuid, score);
+                    leaderboard.put(uuid, score);
                 }
 
                 leaderboardCache = leaderboard;
@@ -129,7 +129,13 @@ public class Database {
             }
         }
 
-        return leaderboardCache;
+        LinkedHashMap<OfflinePlayer, Integer> returnLeaderboard = new LinkedHashMap<>();
+
+        for (UUID uuid : leaderboardCache.keySet()) {
+            returnLeaderboard.put(Bukkit.getOfflinePlayer(uuid), leaderboardCache.get(uuid));
+        }
+
+        return returnLeaderboard;
     }
 
 }
