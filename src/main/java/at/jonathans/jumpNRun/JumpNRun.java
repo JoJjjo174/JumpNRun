@@ -17,7 +17,6 @@ public final class JumpNRun extends JavaPlugin {
     private static JumpNRun instance;
     private HashMap<Player, JumpSession> jumpSessions;
     private Database database;
-    private Config config;
 
     @Override
     public void onEnable() {
@@ -25,18 +24,13 @@ public final class JumpNRun extends JavaPlugin {
         jumpSessions = new HashMap<>();
 
         saveDefaultConfig();
-        config = new Config();
 
         getServer().getPluginManager().registerEvents(new MoveListener(), this);
         getServer().getPluginManager().registerEvents(new LeaveListener(), this);
         getServer().getPluginManager().registerEvents(new DeathListener(), this);
-        if (config.hungerDisabled()) {
-            getServer().getPluginManager().registerEvents(new HungerListener(), this);
-        }
-        if (!config.blockManipulationAllowed()) {
-            getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
-            getServer().getPluginManager().registerEvents(new BlockPlaceListener(), this);
-        }
+        getServer().getPluginManager().registerEvents(new HungerListener(), this);
+        getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
+        getServer().getPluginManager().registerEvents(new BlockPlaceListener(), this);
 
 
         getCommand("jumpnrun").setExecutor(new JumpNRunCommand());
@@ -64,10 +58,6 @@ public final class JumpNRun extends JavaPlugin {
 
     public Database getDatabase() {
         return database;
-    }
-
-    public Config getPluginConfig() {
-        return config;
     }
 
     public DyeColor getRandomColour() {

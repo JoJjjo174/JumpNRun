@@ -90,10 +90,25 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
                     commandSender.sendMessage(leaderboardStringBuilder.toString());
                     return true;
 
+                case "reload":
+                    if (!commandSender.hasPermission("jumpnrun.admin")) {
+                        commandSender.sendMessage("You don't have permission to execute that command!");
+                        return true;
+                    }
+
+                    plugin.reloadConfig();
+                    commandSender.sendMessage("Config reloaded");
+                    return true;
+
                 default:
                     break;
             }
 
+        }
+
+        if (plugin.getConfig().getLocation("pos1") == null || plugin.getConfig().getLocation("pos2") == null) {
+            commandSender.sendMessage("The plugin hasn't been set up yet, contact an administrator");
+            return true;
         }
 
         if (plugin.getJumpSessions().containsKey(player)) {
@@ -119,6 +134,7 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
             if ((commandSender.hasPermission("jumpnrun.admin"))) {
                 argumentList.add("pos1");
                 argumentList.add("pos2");
+                argumentList.add("reload");
             }
 
             ArrayList<String> filteredArgumentList = new ArrayList<>();

@@ -37,8 +37,8 @@ public class JumpSession {
         colour = plugin.getRandomColour();
         colourMaterial = getWoolFromColour(colour);
 
-        pos1 = plugin.getPluginConfig().getPos1();
-        pos2 = plugin.getPluginConfig().getPos2();
+        pos1 = plugin.getConfig().getLocation("pos1");
+        pos2 = plugin.getConfig().getLocation("pos2");
 
         currentBlock = generateStartingLocation().getBlock();
         currentBlock.setType(colourMaterial);

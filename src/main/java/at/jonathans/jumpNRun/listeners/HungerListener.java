@@ -16,6 +16,10 @@ public class HungerListener implements Listener {
 
     @EventHandler
     public void onHungerLoss(FoodLevelChangeEvent event) {
+        if (!JumpNRun.getInstance().getConfig().getBoolean("disable-hunger")) {
+            return;
+        }
+
         if (event.getEntity() instanceof Player player && plugin.getJumpSessions().containsKey(player)) {
             event.setCancelled(true);
         }
