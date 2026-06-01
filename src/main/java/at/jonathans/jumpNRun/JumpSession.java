@@ -7,6 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import java.util.Random;
@@ -166,22 +167,29 @@ public class JumpSession {
             return;
         }
 
-        Location location = player.getLocation();
-
-        if (nextBlock.equals(location.add(0,-1,0).getBlock())) {
-            currentBlock.setType(Material.AIR);
-            currentBlock = nextBlock;
-            generateNextBlock();
-            score++;
-
-            Sound expSound = Sound.sound(
-                    Key.key("entity.experience_orb.pickup"),
-                    Sound.Source.PLAYER,
-                    1.0f,
-                    1.0f
-            );
-            player.playSound(expSound);
+        if (!onNextBlock()) {
+            return;
         }
+
+        currentBlock.setType(Material.AIR);
+        currentBlock = nextBlock;
+        generateNextBlock();
+        score++;
+
+        Sound expSound = Sound.sound(
+                Key.key("entity.experience_orb.pickup"),
+                Sound.Source.PLAYER,
+                1.0f,
+                1.0f
+        );
+        player.playSound(expSound);
+    }
+
+    private boolean onNextBlock() {
+        BoundingBox playerBoundingBox = player.getBoundingBox();
+        BoundingBox nextBlockBoundingBox = nextBlock.getBoundingBox();
+
+        return playerBoundingBox.shift(0, -0.1, 0).overlaps(nextBlockBoundingBox);
     }
 
     public static boolean isInBounds(Location pos1, Location pos2, Location location) {
