@@ -121,7 +121,15 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
                 argumentList.add("pos2");
             }
 
-            return argumentList;
+            ArrayList<String> filteredArgumentList = new ArrayList<>();
+
+            for (String argument : argumentList) {
+                if (argument.startsWith(strings[0])) {
+                    filteredArgumentList.add(argument);
+                }
+            }
+
+            return filteredArgumentList;
 
         } else if (strings.length == 2 && strings[0].equalsIgnoreCase("highscore")) {
             return null;
