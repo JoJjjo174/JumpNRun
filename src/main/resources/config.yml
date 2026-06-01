@@ -2,8 +2,17 @@
 # Prevent Players from breaking and placing blocks in the Jump & Run area
 protect-blocks: true
 
-# Disable hunger while in Jump & Run
+# Temporarily disables hunger while in Jump & Run
 disable-hunger: true
+
+# Temporarily disables Potion Effects while in Jump & Run
+disable-potions: true
+
+# Disables Ender Pearls inside the Jump & Run area
+disable-ender-pearls: true
+
+# Disables Wind Charges inside the Jump & Run area
+disable-wind-charges: true
 
 # ------------------------------ DO NOT manually change values below this line ------------------------------
 

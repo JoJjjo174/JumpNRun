@@ -7,9 +7,12 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
 
 public class JumpSession {
@@ -17,6 +20,7 @@ public class JumpSession {
     private Player player;
     private Location returnLocation;
     private int originalFoodLevel;
+    private Collection<PotionEffect> originalEffects;
     private int score;
 
     private DyeColor colour;
@@ -32,7 +36,6 @@ public class JumpSession {
     public JumpSession(Player player) {
         this.player = player;
         this.returnLocation = player.getLocation();
-        this.originalFoodLevel = player.getFoodLevel();
 
         JumpNRun plugin = JumpNRun.getInstance();
         colour = plugin.getRandomColour();
@@ -52,7 +55,15 @@ public class JumpSession {
         player.teleport(
                 currentBlock.getLocation().add(0,1,0)
         );
-        player.setFoodLevel(20);
+
+        if (plugin.getConfig().getBoolean("disable-hunger")) {
+            this.originalFoodLevel = player.getFoodLevel();
+            player.setFoodLevel(20);
+        }
+        if (plugin.getConfig().getBoolean("disable-potions")) {
+            this.originalEffects = player.getActivePotionEffects();
+            player.clearActivePotionEffects();
+        }
 
         score = 0;
 
@@ -145,11 +156,17 @@ public class JumpSession {
         nextBlock.setType(Material.AIR);
         hologramBlock.remove();
 
-        JumpNRun.getInstance().getJumpSessions().remove(player);
-        player.teleport(returnLocation);
-        player.setFoodLevel(originalFoodLevel);
-
         JumpNRun plugin = JumpNRun.getInstance();
+
+        plugin.getJumpSessions().remove(player);
+        player.teleport(returnLocation);
+
+        if (plugin.getConfig().getBoolean("disable-hunger")) {
+            player.setFoodLevel(originalFoodLevel);
+        }
+        if (plugin.getConfig().getBoolean("disable-potions")) {
+            player.addPotionEffects(originalEffects);
+        }
 
         if (plugin.getDatabase().brokeHighscore(player, score)) {
             player.sendMessage(String.format("Congratulations! You broke your highscore: %d", score));
