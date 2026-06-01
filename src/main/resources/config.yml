@@ -1,0 +1,2 @@
+manipulate-blocks: false  # Allow blocks to be placed and destroyed in the Jump & Run Area
+disable-hunger: true      # Disables hunger while in Jump & Run

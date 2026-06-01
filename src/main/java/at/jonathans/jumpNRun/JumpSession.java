@@ -37,8 +37,8 @@ public class JumpSession {
         colour = plugin.getRandomColour();
         colourMaterial = getWoolFromColour(colour);
 
-        pos1 = plugin.getConfig().getLocation("pos1");
-        pos2 = plugin.getConfig().getLocation("pos2");
+        pos1 = plugin.getPluginConfig().getPos1();
+        pos2 = plugin.getPluginConfig().getPos2();
 
         currentBlock = generateStartingLocation().getBlock();
         currentBlock.setType(colourMaterial);
@@ -134,7 +134,7 @@ public class JumpSession {
             );
             tries++;
 
-        } while ((!pos1.getWorld().getBlockAt(newLocation).getType().equals(Material.AIR) || !isInBounds(newLocation)) && tries < 100);
+        } while ((!pos1.getWorld().getBlockAt(newLocation).getType().equals(Material.AIR) || !isInBounds(pos1, pos2, newLocation)) && tries < 100);
 
         return newLocation;
     }
@@ -184,7 +184,7 @@ public class JumpSession {
         }
     }
 
-    private boolean isInBounds(Location location) {
+    public static boolean isInBounds(Location pos1, Location pos2, Location location) {
         int minX = (int) Math.min( pos1.x(), pos2.x() );
         int maxX = (int) Math.max( pos1.x(), pos2.x() );
 

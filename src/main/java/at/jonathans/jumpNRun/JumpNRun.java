@@ -1,10 +1,7 @@
 package at.jonathans.jumpNRun;
 
 import at.jonathans.jumpNRun.commands.JumpNRunCommand;
-import at.jonathans.jumpNRun.listeners.DeathListener;
-import at.jonathans.jumpNRun.listeners.HungerListener;
-import at.jonathans.jumpNRun.listeners.LeaveListener;
-import at.jonathans.jumpNRun.listeners.MoveListener;
+import at.jonathans.jumpNRun.listeners.*;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -20,6 +17,7 @@ public final class JumpNRun extends JavaPlugin {
     private static JumpNRun instance;
     private HashMap<Player, JumpSession> jumpSessions;
     private Database database;
+    private Config config;
 
     @Override
     public void onEnable() {
@@ -27,11 +25,19 @@ public final class JumpNRun extends JavaPlugin {
         jumpSessions = new HashMap<>();
 
         saveDefaultConfig();
+        config = new Config();
 
         getServer().getPluginManager().registerEvents(new MoveListener(), this);
         getServer().getPluginManager().registerEvents(new LeaveListener(), this);
         getServer().getPluginManager().registerEvents(new DeathListener(), this);
-        getServer().getPluginManager().registerEvents(new HungerListener(), this);
+        if (config.hungerDisabled()) {
+            getServer().getPluginManager().registerEvents(new HungerListener(), this);
+        }
+        if (!config.blockManipulationAllowed()) {
+            getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
+            getServer().getPluginManager().registerEvents(new BlockPlaceListener(), this);
+        }
+
 
         getCommand("jumpnrun").setExecutor(new JumpNRunCommand());
 
@@ -58,6 +64,10 @@ public final class JumpNRun extends JavaPlugin {
 
     public Database getDatabase() {
         return database;
+    }
+
+    public Config getPluginConfig() {
+        return config;
     }
 
     public DyeColor getRandomColour() {
