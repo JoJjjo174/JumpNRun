@@ -8,8 +8,8 @@ disable-hunger: true
 # Temporarily disables Potion Effects while in Jump & Run
 disable-potions: true
 
-# Disables Ender Pearls inside the Jump & Run area
-disable-ender-pearls: true
+# Disables the use of projectiles like Ender Pearls, Wind Charges and Splash Potions during the Jump & Run
+disable-projectiles: true
 
 # ------------------------------ DO NOT manually change values below this line ------------------------------
 

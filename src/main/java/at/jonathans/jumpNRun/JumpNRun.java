@@ -29,7 +29,8 @@ public final class JumpNRun extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new HungerListener(), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
         getServer().getPluginManager().registerEvents(new BlockPlaceListener(), this);
-        getServer().getPluginManager().registerEvents(new EnderPearlListener(), this);
+        getServer().getPluginManager().registerEvents(new ProjectileListener(), this);
+        getServer().getPluginManager().registerEvents(new PotionDrinkListener(), this);
 
 
         getCommand("jumpnrun").setExecutor(new JumpNRunCommand());
