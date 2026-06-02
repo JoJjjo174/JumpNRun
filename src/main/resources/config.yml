@@ -11,6 +11,12 @@ disable-potions: true
 # Disables the use of projectiles like Ender Pearls, Wind Charges and Splash Potions during the Jump & Run
 disable-projectiles: true
 
+# Enables a bossbar which shows the current score during the Jump & Run
+enable-bossbar: true
+
+# Any block that can be coloured (wool, terracotta, glazed_terracotta, concrete, stained_glass)
+block-material: 'wool'
+
 # ------------------------------ DO NOT manually change values below this line ------------------------------
 
 pos1: null

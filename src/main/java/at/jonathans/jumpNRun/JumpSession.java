@@ -13,7 +13,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
 
@@ -42,7 +41,7 @@ public class JumpSession {
 
         JumpNRun plugin = JumpNRun.getInstance();
         colour = plugin.getRandomColour();
-        colourMaterial = getWoolFromColour(colour);
+        colourMaterial = getMaterialFromColour(colour);
 
         pos1 = plugin.getConfig().getLocation("pos1");
         pos2 = plugin.getConfig().getLocation("pos2");
@@ -55,9 +54,11 @@ public class JumpSession {
 
         hologramBlock = createHologram(generateLocation(nextBlock.getLocation()), colour);
 
-        Component bossBarText = Component.text("Jump & Run | Score: 0");
-        scoreBar = BossBar.bossBar(bossBarText, 1f, getBossBarColor(colour), BossBar.Overlay.PROGRESS);
-        player.showBossBar(scoreBar);
+        if (plugin.getConfig().getBoolean("enable-bossbar")) {
+            Component bossBarText = Component.text("Jump & Run | Score: 0");
+            scoreBar = BossBar.bossBar(bossBarText, 1f, getBossBarColor(colour), BossBar.Overlay.PROGRESS);
+            player.showBossBar(scoreBar);
+        }
 
         player.teleport(
                 currentBlock.getLocation().add(0,1,0)
@@ -167,12 +168,14 @@ public class JumpSession {
 
         plugin.getJumpSessions().remove(player);
         player.teleport(returnLocation);
-        player.hideBossBar(scoreBar);
 
-        if (plugin.getConfig().getBoolean("disable-hunger")) {
+        if (scoreBar != null) {
+            player.hideBossBar(scoreBar);
+        }
+        if (originalFoodLevel != 0) {
             player.setFoodLevel(originalFoodLevel);
         }
-        if (plugin.getConfig().getBoolean("disable-potions")) {
+        if (originalEffects != null) {
             player.addPotionEffects(originalEffects);
         }
 
@@ -200,7 +203,9 @@ public class JumpSession {
         currentBlock = nextBlock;
         generateNextBlock();
         score++;
-        scoreBar.name(Component.text("Jump & Run | Score: " + score));
+        if (scoreBar != null) {
+            scoreBar.name(Component.text("Jump & Run | Score: " + score));
+        }
 
         Sound expSound = Sound.sound(
                 Key.key("entity.experience_orb.pickup"),
@@ -256,8 +261,8 @@ public class JumpSession {
                 && maxZ >= locZ && minZ <= locZ;
     }
 
-    private static Material getWoolFromColour(DyeColor color) {
-        return Material.valueOf(color.name() + "_WOOL");
+    private static Material getMaterialFromColour(DyeColor colour) {
+        return Material.valueOf(colour.name() + "_" + JumpNRun.getInstance().getConfig().getString("block-material").toUpperCase());
     }
 
     private static BossBar.Color getBossBarColor(DyeColor dyeColor) {
