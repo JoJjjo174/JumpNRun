@@ -1,7 +1,9 @@
 package at.jonathans.jumpNRun;
 
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.text.Component;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,6 +24,7 @@ public class JumpSession {
     private int originalFoodLevel;
     private Collection<PotionEffect> originalEffects;
     private int score;
+    private BossBar scoreBar;
 
     private DyeColor colour;
     private Material colourMaterial;
@@ -51,6 +54,10 @@ public class JumpSession {
         nextBlock.setType(colourMaterial);
 
         hologramBlock = createHologram(generateLocation(nextBlock.getLocation()), colour);
+
+        Component bossBarText = Component.text("Jump & Run | Score: 0");
+        scoreBar = BossBar.bossBar(bossBarText, 1f, getBossBarColor(colour), BossBar.Overlay.PROGRESS);
+        player.showBossBar(scoreBar);
 
         player.teleport(
                 currentBlock.getLocation().add(0,1,0)
@@ -160,6 +167,7 @@ public class JumpSession {
 
         plugin.getJumpSessions().remove(player);
         player.teleport(returnLocation);
+        player.hideBossBar(scoreBar);
 
         if (plugin.getConfig().getBoolean("disable-hunger")) {
             player.setFoodLevel(originalFoodLevel);
@@ -192,6 +200,7 @@ public class JumpSession {
         currentBlock = nextBlock;
         generateNextBlock();
         score++;
+        scoreBar.name(Component.text("Jump & Run | Score: " + score));
 
         Sound expSound = Sound.sound(
                 Key.key("entity.experience_orb.pickup"),
@@ -249,6 +258,20 @@ public class JumpSession {
 
     private static Material getWoolFromColour(DyeColor color) {
         return Material.valueOf(color.name() + "_WOOL");
+    }
+
+    private static BossBar.Color getBossBarColor(DyeColor dyeColor) {
+        return switch (dyeColor) {
+            case PINK -> BossBar.Color.PINK;
+            case BLUE, CYAN, LIGHT_BLUE -> BossBar.Color.BLUE;
+            case RED -> BossBar.Color.RED;
+            case GREEN, LIME -> BossBar.Color.GREEN;
+            case YELLOW, ORANGE, BROWN -> BossBar.Color.YELLOW;
+            case PURPLE, MAGENTA -> BossBar.Color.PURPLE;
+            case WHITE, BLACK, GRAY, LIGHT_GRAY -> BossBar.Color.WHITE;
+
+            default -> BossBar.Color.WHITE;
+        };
     }
 
     private Entity createHologram(Location location, DyeColor colour) {
