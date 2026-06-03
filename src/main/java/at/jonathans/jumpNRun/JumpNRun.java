@@ -7,7 +7,6 @@ import org.bukkit.DyeColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -16,7 +15,7 @@ public final class JumpNRun extends JavaPlugin {
     private static JumpNRun instance;
     private HashMap<Player, JumpSession> jumpSessions;
     private Database database;
-    private final int PLUGIN_ID = 31776;
+    private final int BSTATS_PLUGIN_ID = 31776;
 
     @Override
     public void onEnable() {
@@ -36,9 +35,13 @@ public final class JumpNRun extends JavaPlugin {
 
         getCommand("jumpnrun").setExecutor(new JumpNRunCommand());
 
+        if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            new PapiPlaceholders().register();
+        }
+
         database = new Database();
 
-        Metrics metrics = new Metrics(this, PLUGIN_ID);
+        Metrics metrics = new Metrics(this, BSTATS_PLUGIN_ID);
     }
 
     @Override

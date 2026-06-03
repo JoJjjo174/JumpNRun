@@ -143,7 +143,7 @@ public class JumpSession {
     private Location generateLocation(Location from) {
         Random rng = new Random();
 
-        double hardChance = Math.max(0.333 - Math.exp(-0.05*score), 0);
+        double hardChance = getHardJumpChance();
         boolean hardJump = hardChance >= rng.nextDouble();
 
         int tries = 0;
@@ -287,6 +287,14 @@ public class JumpSession {
         hologram.setGlowColorOverride(colour.getColor());
 
         return hologram;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public double getHardJumpChance() {
+        return Math.max(0.333 - Math.exp(-0.05*score), 0);
     }
 
 }
