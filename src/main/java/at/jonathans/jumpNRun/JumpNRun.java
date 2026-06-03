@@ -2,6 +2,7 @@ package at.jonathans.jumpNRun;
 
 import at.jonathans.jumpNRun.commands.JumpNRunCommand;
 import at.jonathans.jumpNRun.listeners.*;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -15,6 +16,7 @@ public final class JumpNRun extends JavaPlugin {
     private static JumpNRun instance;
     private HashMap<Player, JumpSession> jumpSessions;
     private Database database;
+    private final int PLUGIN_ID = 31776;
 
     @Override
     public void onEnable() {
@@ -37,6 +39,8 @@ public final class JumpNRun extends JavaPlugin {
 
         File dataBaseFile = new File(getDataFolder(), "data.db");
         database = new Database(dataBaseFile);
+
+        Metrics metrics = new Metrics(this, PLUGIN_ID);
     }
 
     @Override
