@@ -34,11 +34,9 @@ public final class JumpNRun extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ProjectileListener(), this);
         getServer().getPluginManager().registerEvents(new PotionDrinkListener(), this);
 
-
         getCommand("jumpnrun").setExecutor(new JumpNRunCommand());
 
-        File dataBaseFile = new File(getDataFolder(), "data.db");
-        database = new Database(dataBaseFile);
+        database = new Database();
 
         Metrics metrics = new Metrics(this, PLUGIN_ID);
     }

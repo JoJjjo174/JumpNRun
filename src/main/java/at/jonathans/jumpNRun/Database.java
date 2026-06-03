@@ -18,18 +18,33 @@ public class Database {
     private LinkedHashMap<UUID, Integer> leaderboardCache;
     private Instant leaderboardCacheAge;
 
-    public Database(File dataBaseFile) {
+    public Database() {
         cache = new HashMap<>();
         leaderboardCacheAge = Instant.ofEpochSecond(0);
 
+        JumpNRun plugin = JumpNRun.getInstance();
+
         try {
-            String url = "jdbc:sqlite:" + dataBaseFile.getAbsolutePath();
-            connection = DriverManager.getConnection(url);
+            String databaseType = plugin.getConfig().getString("database.type");
+            if (databaseType.equalsIgnoreCase("sqlite")) {
+                File dataBaseFile = new File(plugin.getDataFolder(), "data.db");
+                String url = "jdbc:sqlite:" + dataBaseFile.getAbsolutePath();
+                connection = DriverManager.getConnection(url);
+
+            } else {
+                String url = "jdbc:mysql://" + plugin.getConfig().getString("database.credentials.url") + "/" + plugin.getConfig().getString("database.credentials.database");
+                String username = plugin.getConfig().getString("database.credentials.username");
+                String password = plugin.getConfig().getString("database.credentials.password");
+
+                connection = DriverManager.getConnection(url, username, password);
+            }
+
             Statement statement = connection.createStatement();
-            statement.execute("CREATE TABLE IF NOT EXISTS highscores(uuid STRING, score INT);");
+            statement.execute("CREATE TABLE IF NOT EXISTS highscores(uuid VARCHAR(36) PRIMARY KEY, score INTEGER);");
 
         } catch (SQLException exception) {
-            JumpNRun.getInstance().getLogger().severe("Failed to connect to database");
+            JumpNRun.getInstance().getLogger().severe("Failed to connect to database: " + exception.getMessage());
+            plugin.getServer().getPluginManager().disablePlugin(plugin);
         }
 
     }
@@ -39,7 +54,7 @@ public class Database {
             connection.close();
 
         } catch (SQLException exception) {
-            JumpNRun.getInstance().getLogger().warning("Failed to close database connection");
+            JumpNRun.getInstance().getLogger().warning("Failed to close database connection: " + exception.getMessage());
         }
     }
 
@@ -70,7 +85,7 @@ public class Database {
             }
 
         } catch (SQLException exception) {
-            JumpNRun.getInstance().getLogger().severe("Failed to update highscore");
+            JumpNRun.getInstance().getLogger().severe("Failed to update highscore: " + exception.getMessage());
         }
 
         return true;
@@ -96,7 +111,7 @@ public class Database {
                 }
 
             } catch (SQLException exception) {
-                JumpNRun.getInstance().getLogger().severe("Failed to fetch highscore from database");
+                JumpNRun.getInstance().getLogger().severe("Failed to fetch highscore from database: " + exception.getMessage());
                 cache.put(uuid, -1);
             }
         }
@@ -125,7 +140,7 @@ public class Database {
                 leaderboardCacheAge = Instant.now();
 
             } catch (SQLException exception) {
-                JumpNRun.getInstance().getLogger().severe("Failed to fetch leaderboard from database");
+                JumpNRun.getInstance().getLogger().severe("Failed to fetch leaderboard from database: " + exception.getMessage());
             }
         }
 
