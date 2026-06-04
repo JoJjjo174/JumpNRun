@@ -2,6 +2,8 @@ package at.jonathans.jumpNRun.commands;
 
 import at.jonathans.jumpNRun.JumpNRun;
 import at.jonathans.jumpNRun.JumpSession;
+import at.jonathans.jumpNRun.Message;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -12,7 +14,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,14 +37,14 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
                 case "pos1":
                 case "pos2":
                     if (!commandSender.hasPermission("jumpnrun.admin")) {
-                        commandSender.sendMessage("You don't have permission to execute that command!");
+                        commandSender.sendMessage(Message.noPermissionMessage());
                         return true;
                     }
 
                     plugin.getConfig().set(strings[0].toLowerCase(), player.getLocation());
                     plugin.saveConfig();
 
-                    commandSender.sendMessage("Set location");
+                    commandSender.sendMessage(Message.positionSet(strings[0]));
                     return true;
 
                 case "highscore":
@@ -56,48 +57,34 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
 
                     int highscore = plugin.getDatabase().getHighscore(targetPlayer);
                     if (highscore == -1) {
-                        commandSender.sendMessage("This player doesn't have a highscore yet!");
+                        commandSender.sendMessage(Message.noHighscoreYet());
                         return true;
                     }
 
-                    commandSender.sendMessage(String.format("Highscore: %d", highscore));
+                    commandSender.sendMessage(Message.highscoreMessage(targetPlayer, highscore));
                     return true;
 
                 case "leaderboard":
                     LinkedHashMap<OfflinePlayer, Integer> leaderboard = plugin.getDatabase().getLeaderboard();
 
-                    StringBuilder leaderboardStringBuilder = new StringBuilder();
+                    Component leaderboardComponent = Message.leaderboardText(leaderboard);
 
-                    int i = 1;
-                    for (OfflinePlayer leaderboardPlayer : leaderboard.keySet()) {
-                        int leaderboardPlayerScore = leaderboard.get(leaderboardPlayer);
-
-                        leaderboardStringBuilder.append(i);
-                        leaderboardStringBuilder.append(". ");
-                        leaderboardStringBuilder.append(leaderboardPlayer.getName());
-                        leaderboardStringBuilder.append(" (");
-                        leaderboardStringBuilder.append(leaderboardPlayerScore);
-                        leaderboardStringBuilder.append(")\n");
-
-                        i++;
-                    }
-
-                    if (leaderboardStringBuilder.isEmpty()) {
-                        commandSender.sendMessage("No people in leaderboard");
+                    if (leaderboardComponent.toString().isEmpty()) {
+                        commandSender.sendMessage(Message.emptyLeaderboard());
                         return true;
                     }
 
-                    commandSender.sendMessage(leaderboardStringBuilder.toString());
+                    commandSender.sendMessage(leaderboardComponent);
                     return true;
 
                 case "reload":
                     if (!commandSender.hasPermission("jumpnrun.admin")) {
-                        commandSender.sendMessage("You don't have permission to execute that command!");
+                        commandSender.sendMessage(Message.noPermissionMessage());
                         return true;
                     }
 
                     plugin.reloadConfig();
-                    commandSender.sendMessage("Config reloaded");
+                    commandSender.sendMessage(Message.configReloaded());
                     return true;
 
                 default:
@@ -107,12 +94,12 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
         }
 
         if (plugin.getConfig().getLocation("pos1") == null || plugin.getConfig().getLocation("pos2") == null) {
-            commandSender.sendMessage("The plugin hasn't been set up yet, contact an administrator");
+            commandSender.sendMessage(Message.notSetUpYet());
             return true;
         }
 
         if (plugin.getJumpSessions().containsKey(player)) {
-            player.sendMessage("You already started a Jump & Run");
+            player.sendMessage(Message.jumpNRunAlreadyStarted());
             return true;
         }
 

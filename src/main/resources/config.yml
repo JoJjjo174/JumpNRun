@@ -24,7 +24,7 @@ database:
 
   # Only need to be set when a mysql database ist used
   credentials:
-    url: ''
+    host: ''
     database: ''
     username: ''
     password: ''

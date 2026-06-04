@@ -3,7 +3,6 @@ package at.jonathans.jumpNRun;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.text.Component;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -55,8 +54,7 @@ public class JumpSession {
         hologramBlock = createHologram(generateLocation(nextBlock.getLocation()), colour);
 
         if (plugin.getConfig().getBoolean("enable-bossbar")) {
-            Component bossBarText = Component.text("Jump & Run | Score: 0");
-            scoreBar = BossBar.bossBar(bossBarText, 1f, getBossBarColor(colour), BossBar.Overlay.PROGRESS);
+            scoreBar = BossBar.bossBar(Message.bossbarText(score), 1f, getBossBarColor(colour), BossBar.Overlay.PROGRESS);
             player.showBossBar(scoreBar);
         }
 
@@ -180,11 +178,11 @@ public class JumpSession {
         }
 
         if (plugin.getDatabase().brokeHighscore(player, score)) {
-            player.sendMessage(String.format("Congratulations! You broke your highscore: %d", score));
+            player.sendMessage(Message.brokeHighscoreMessage(score));
 
         } else {
             int highscore = plugin.getDatabase().getHighscore(player);
-            player.sendMessage(String.format("You fell! You reached a score of: %d\nYour highscore is: %d", score, highscore));
+            player.sendMessage(Message.scoreMessage(score, highscore));
         }
 
     }
@@ -204,7 +202,7 @@ public class JumpSession {
         generateNextBlock();
         score++;
         if (scoreBar != null) {
-            scoreBar.name(Component.text("Jump & Run | Score: " + score));
+            scoreBar.name(Message.bossbarText(score));
         }
 
         Sound expSound = Sound.sound(

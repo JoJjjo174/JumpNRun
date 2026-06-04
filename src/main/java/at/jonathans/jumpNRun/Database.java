@@ -120,7 +120,7 @@ public class Database {
     }
 
     public LinkedHashMap<OfflinePlayer, Integer> getLeaderboard() {
-        if (Instant.now().isAfter(leaderboardCacheAge.plusSeconds(900))) {
+        if (Instant.now().isAfter(leaderboardCacheAge.plusSeconds(300))) {
             try {
                 String sql = "SELECT uuid, score FROM highscores ORDER BY score DESC LIMIT 10;";
                 Statement statement = connection.createStatement();
