@@ -117,7 +117,6 @@ public class JumpSession {
 
     private Vector generateHardJump() {
         int[][] jumps = {
-                {4,0,4},
                 {5,0,0},
                 {0,0,5},
                 {5,0,1},
