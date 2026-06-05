@@ -1,5 +1,7 @@
 name: JumpNRun
 version: '${version}'
+description: An infinitely generating Jump & Run minigame
+author: JoJjjo147
 
 main: at.jonathans.jumpNRun.JumpNRun
 api-version: '26.1.2'

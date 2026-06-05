@@ -280,9 +280,11 @@ public class JumpSession {
     private Entity createHologram(Location location, DyeColor colour) {
         BlockDisplay hologram = (BlockDisplay) pos1.getWorld().spawnEntity(location.toBlockLocation(), EntityType.BLOCK_DISPLAY);
 
-        hologram.setBlock(Material.GLASS.createBlockData());
-        hologram.setGlowing(true);
-        hologram.setGlowColorOverride(colour.getColor());
+        if (JumpNRun.getInstance().getConfig().getBoolean("hologram-block")) {
+            hologram.setBlock(Material.GLASS.createBlockData());
+            hologram.setGlowing(true);
+            hologram.setGlowColorOverride(colour.getColor());
+        }
 
         return hologram;
     }
