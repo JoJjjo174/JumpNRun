@@ -99,5 +99,11 @@
             <version>2.12.2</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>3.1.4</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

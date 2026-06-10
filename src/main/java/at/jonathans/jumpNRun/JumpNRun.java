@@ -6,7 +6,15 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.DyeColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import tools.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -16,6 +24,7 @@ public final class JumpNRun extends JavaPlugin {
     private HashMap<Player, JumpSession> jumpSessions;
     private Database database;
     private final int BSTATS_PLUGIN_ID = 31776;
+    private final String MODRINTH_PLUGIN_ID = "ZucF3Myf"; // ""9W6kSxB3";
 
     @Override
     public void onEnable() {
@@ -42,6 +51,16 @@ public final class JumpNRun extends JavaPlugin {
         database = new Database();
 
         Metrics metrics = new Metrics(this, BSTATS_PLUGIN_ID);
+
+        if (getConfig().getBoolean("check-updates")) {
+            String newestVersion = getNewestVersion();
+
+            if (newestVersion != null && !newestVersion.equals(getPluginMeta().getVersion())) {
+                getLogger().warning(
+                        String.format("There is a new version of JumpNRun available (%s), you can download it on Modrinth", newestVersion)
+                );
+            }
+        }
     }
 
     @Override
@@ -69,5 +88,35 @@ public final class JumpNRun extends JavaPlugin {
         Random rng = new Random();
         DyeColor[] colours =  DyeColor.values();
         return colours[rng.nextInt(colours.length)];
+    }
+
+    public String getNewestVersion() {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.modrinth.com/v2/project/" + MODRINTH_PLUGIN_ID + "/version"))
+                .timeout(Duration.of(4, ChronoUnit.SECONDS))
+                .GET()
+                .build();
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                return null;
+            }
+
+            PluginVersion[] versions = mapper.readValue(response.body(), PluginVersion[].class);
+
+            if (versions.length > 0) {
+                return versions[0].versionNumber();
+            }
+            return null;
+
+        } catch (IOException | InterruptedException exception) {
+            getLogger().warning("Couldn't check for updates. Error: " + exception.getMessage());
+        }
+
+        return null;
     }
 }

@@ -20,6 +20,9 @@ block-material: 'wool'
 # Shows a pass-through ghost block where the next block will generate
 hologram-block: true
 
+# Check for plugin updates
+check-updates: true
+
 database:
   # Choose either 'sqlite' or 'mysql'
   # DO NOT change this value unless you know what you are doing
@@ -36,4 +39,4 @@ database:
 
 pos1: null
 pos2: null
-config-version: 0
+config-version: 1
