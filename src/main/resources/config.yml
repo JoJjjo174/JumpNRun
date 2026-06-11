@@ -37,6 +37,6 @@ database:
 
 # ------------------------------ DO NOT manually change values below this line ------------------------------
 
+config-version: 1
 pos1: null
 pos2: null
-config-version: 1

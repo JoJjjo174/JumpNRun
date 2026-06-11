@@ -4,10 +4,13 @@ import at.jonathans.jumpNRun.commands.JumpNRunCommand;
 import at.jonathans.jumpNRun.listeners.*;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.DyeColor;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import tools.jackson.databind.ObjectMapper;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -24,7 +27,7 @@ public final class JumpNRun extends JavaPlugin {
     private HashMap<Player, JumpSession> jumpSessions;
     private Database database;
     private final int BSTATS_PLUGIN_ID = 31776;
-    private final String MODRINTH_PLUGIN_ID = "ZucF3Myf"; // ""9W6kSxB3";
+    private final String MODRINTH_PLUGIN_ID = "9W6kSxB3";
 
     @Override
     public void onEnable() {
@@ -32,6 +35,7 @@ public final class JumpNRun extends JavaPlugin {
         jumpSessions = new HashMap<>();
 
         saveDefaultConfig();
+        updateConfig();
 
         getServer().getPluginManager().registerEvents(new MoveListener(), this);
         getServer().getPluginManager().registerEvents(new LeaveListener(), this);
@@ -118,5 +122,40 @@ public final class JumpNRun extends JavaPlugin {
         }
 
         return null;
+    }
+
+    private void updateConfig() {
+        FileConfiguration config = getConfig();
+
+        int newestConfigVersion = config.getDefaults().getInt("config-version");
+        int configVersion = config.getInt("config-version");
+
+        if (newestConfigVersion <= configVersion) {
+            return;
+        }
+
+        File oldConfigFile = new File(getDataFolder(), "config.yml");
+        File backupConfigFile = new File(getDataFolder(), "old-config-backup.yml");
+        oldConfigFile.renameTo(backupConfigFile);
+
+        saveDefaultConfig();
+        reloadConfig();
+        FileConfiguration newConfig = getConfig();
+        FileConfiguration oldConfig = YamlConfiguration.loadConfiguration(backupConfigFile);
+
+        for (String key : oldConfig.getKeys(true)) {
+            if (
+                    key.equals("config-version") ||
+                    oldConfig.isConfigurationSection(key) ||
+                    (!newConfig.contains(key) && !key.startsWith("pos"))
+            ) {
+                continue;
+            }
+
+            newConfig.set(key, oldConfig.get(key));
+        }
+        saveConfig();
+
+        getLogger().info("Updated config to the newest version");
     }
 }
