@@ -1,6 +1,7 @@
 package at.jonathans.jumpNRun;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.OfflinePlayer;
@@ -98,6 +99,13 @@ public class Message {
         component = component.append(Component.text("----------|----------", NamedTextColor.WHITE));
 
         return component;
+    }
+
+    public static Component getOutdatedMessage() {
+        String url = "https://modrinth.com/project/" + JumpNRun.getInstance().getModrinthId();
+
+        return Component.text("There is a new version of JumpNRun available. You can download it on ", NamedTextColor.GRAY)
+                .append( Component.text("Modrinth", NamedTextColor.LIGHT_PURPLE).clickEvent(ClickEvent.openUrl(url)) );
     }
 
     private static TextColor getLeaderboardPositionColour(int position) {

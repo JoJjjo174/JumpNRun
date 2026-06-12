@@ -26,6 +26,7 @@ public final class JumpNRun extends JavaPlugin {
     private static JumpNRun instance;
     private HashMap<Player, JumpSession> jumpSessions;
     private Database database;
+    private boolean outdated = false;
     private final int BSTATS_PLUGIN_ID = 31776;
     private final String MODRINTH_PLUGIN_ID = "9W6kSxB3";
 
@@ -39,6 +40,7 @@ public final class JumpNRun extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new MoveListener(), this);
         getServer().getPluginManager().registerEvents(new LeaveListener(), this);
+        getServer().getPluginManager().registerEvents(new JoinListener(), this);
         getServer().getPluginManager().registerEvents(new DeathListener(), this);
         getServer().getPluginManager().registerEvents(new HungerListener(), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
@@ -60,6 +62,7 @@ public final class JumpNRun extends JavaPlugin {
             String newestVersion = getNewestVersion();
 
             if (newestVersion != null && !newestVersion.equals(getPluginMeta().getVersion())) {
+                outdated = true;
                 getLogger().warning(
                         String.format("There is a new version of JumpNRun available (%s), you can download it on Modrinth", newestVersion)
                 );
@@ -158,4 +161,13 @@ public final class JumpNRun extends JavaPlugin {
 
         getLogger().info("Updated config to the newest version");
     }
+
+    public boolean isOutdated() {
+        return outdated;
+    }
+
+    public String getModrinthId() {
+        return MODRINTH_PLUGIN_ID;
+    }
+
 }
