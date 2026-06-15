@@ -28,6 +28,7 @@ public final class JumpNRun extends JavaPlugin {
     private HashMap<Player, JumpSession> jumpSessions;
     private Database database;
     private boolean outdated = false;
+    private CustomConfig messagesConfig;
     private final int BSTATS_PLUGIN_ID = 31776;
     private final String MODRINTH_PLUGIN_ID = "9W6kSxB3";
 
@@ -38,6 +39,7 @@ public final class JumpNRun extends JavaPlugin {
 
         saveDefaultConfig();
         updateConfig();
+        messagesConfig = new CustomConfig("messages.yml");
 
         getServer().getPluginManager().registerEvents(new MoveListener(), this);
         getServer().getPluginManager().registerEvents(new LeaveListener(), this);
@@ -158,6 +160,11 @@ public final class JumpNRun extends JavaPlugin {
         getLogger().info("Updated config to the newest version");
     }
 
+    public void reload() {
+        reloadConfig();
+        messagesConfig.reload();
+    }
+
     public static JumpNRun getInstance() {
         return instance;
     }
@@ -182,6 +189,10 @@ public final class JumpNRun extends JavaPlugin {
 
     public String getModrinthId() {
         return MODRINTH_PLUGIN_ID;
+    }
+
+    public CustomConfig getMessages() {
+        return messagesConfig;
     }
 
 }

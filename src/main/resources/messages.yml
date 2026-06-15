@@ -1,0 +1,40 @@
+no-permission: "<red>You don't have permission to do that!"
+
+not-set-up-yet: "<red>The plugin hasn't been set up yet, contact an administrator"
+
+# Placeholders: <score>
+broke-highscore: "<gray>You reached a score of <light_purple><score><gray>! Thats a new highscore!"
+
+empty-leaderboard: "<gray>No people in leaderboard"
+
+config-reloaded: "<gray>Config reloaded"
+
+jumpnrun-already-started: "<red>You already started a Jump & Run"
+
+# Placeholders: <score>, <highscore>
+score-message: "<gray>You fell! You reached a score of <light_purple><score><gray>. Your highscore is <gray><highscore>"
+
+# Placeholders: <player>, <highscore>
+highscore-message: "<gray><player>'s highscore: <light_purple><highscore>"
+
+no-highscore-yet: "<gray>This player doesn't have a highscore yet"
+
+# Placeholders: <pos>
+position-set: "<light_purple><pos><gray> set"
+
+# Placeholders: <score>
+bossbar-text: "Jump & Run | Score: <score>"
+
+outdated-message: "<gray>There is a new version of JumpNRun available. You can download it on <click:open_url:https://modrinth.com/project/9W6kSxB3><light_purple>Modrinth</click>"
+
+leaderboard:
+  header: "---- Leaderboard ----"
+
+  # Placeholders: <position>, <player>
+  entry: "<position>. <gray><player> (<light_purple><score><gray>)"
+
+  footer: "<white>----------|----------"
+
+  # ------------------------------ DO NOT manually change values below this line ------------------------------
+
+  config-version: 1

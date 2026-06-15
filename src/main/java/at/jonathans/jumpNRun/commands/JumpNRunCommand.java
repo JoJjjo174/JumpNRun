@@ -83,7 +83,7 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
                         return true;
                     }
 
-                    plugin.reloadConfig();
+                    plugin.reload();
                     commandSender.sendMessage(Message.configReloaded());
                     return true;
 

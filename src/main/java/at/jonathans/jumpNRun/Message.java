@@ -4,7 +4,10 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.w3c.dom.Text;
 
 import java.util.LinkedHashMap;
@@ -12,70 +15,93 @@ import java.util.LinkedHashMap;
 public class Message {
 
     public static Component noPermissionMessage() {
-        return Component.text("You don't have permission to do that!", NamedTextColor.RED);
+        String message = JumpNRun.getInstance().getMessages().get().getString("no-permission");
+
+        return MiniMessage.miniMessage().deserialize(message);
     }
 
     public static Component notSetUpYet() {
-        return Component.text("The plugin hasn't been set up yet, contact an administrator", NamedTextColor.RED);
+        String message = JumpNRun.getInstance().getMessages().get().getString("broke-highscore");
+
+        return MiniMessage.miniMessage().deserialize(message);
     }
 
     public static Component brokeHighscoreMessage(int score) {
-        Component component = Component.text("You reached a score of ", NamedTextColor.GRAY)
-                .append(Component.text(score, NamedTextColor.LIGHT_PURPLE))
-                .append(Component.text("! Thats a new highscore!", NamedTextColor.GRAY));
+        String message = JumpNRun.getInstance().getMessages().get().getString("not-set-up-yet");
 
-        return component;
+        return MiniMessage.miniMessage().deserialize(message,
+                Placeholder.component("score", Component.text(score))
+        );
     }
 
     public static Component emptyLeaderboard() {
-        return Component.text("No people in leaderboard", NamedTextColor.GRAY);
+        String message = JumpNRun.getInstance().getMessages().get().getString("empty-leaderboard");
+
+        return MiniMessage.miniMessage().deserialize(message);
     }
 
     public static Component configReloaded() {
-        return Component.text("Config reloaded", NamedTextColor.GRAY);
+        String message = JumpNRun.getInstance().getMessages().get().getString("config-reloaded");
+
+        return MiniMessage.miniMessage().deserialize(message);
     }
 
     public static Component jumpNRunAlreadyStarted() {
-        return Component.text("You already started a Jump & Run", NamedTextColor.RED);
+        String message = JumpNRun.getInstance().getMessages().get().getString("jumpnrun-already-started");
+
+        return MiniMessage.miniMessage().deserialize(message);
     }
 
     public static Component scoreMessage(int score, int highscore) {
-        Component component = Component.text("You fell! You reached a score of ", NamedTextColor.GRAY)
-                .append(Component.text(score, NamedTextColor.LIGHT_PURPLE))
-                .append(Component.text(". Your highscore is ", NamedTextColor.GRAY))
-                .append(Component.text(highscore, NamedTextColor.GRAY));
+        String message = JumpNRun.getInstance().getMessages().get().getString("score-message");
 
-        return component;
+        return MiniMessage.miniMessage().deserialize(message,
+                Placeholder.component("score", Component.text(score)),
+                Placeholder.component("highscore", Component.text(highscore))
+        );
     }
 
     public static Component highscoreMessage(OfflinePlayer player, int highscore) {
-        Component component = Component.text(player.getName(), NamedTextColor.GRAY)
-                .append(Component.text("'s highscore: ", NamedTextColor.GRAY))
-                .append(Component.text(highscore, NamedTextColor.LIGHT_PURPLE));
+        String message = JumpNRun.getInstance().getMessages().get().getString("highscore-message");
 
-        return component;
+        return MiniMessage.miniMessage().deserialize(message,
+                Placeholder.component("player", Component.text(player.getName())),
+                Placeholder.component("highscore", Component.text(highscore))
+        );
     }
 
     public static Component noHighscoreYet() {
-        return Component.text("This player doesn't have a highscore yet", NamedTextColor.GRAY);
+        String message = JumpNRun.getInstance().getMessages().get().getString("no-highscore-yet");
+
+        return MiniMessage.miniMessage().deserialize(message);
     }
 
     public static Component positionSet(String pos) {
-        Component component = Component.text(pos.toLowerCase(), NamedTextColor.LIGHT_PURPLE)
-                .append(Component.text(" set", NamedTextColor.GRAY));
+        String message = JumpNRun.getInstance().getMessages().get().getString("position-set");
 
-        return component;
+        return MiniMessage.miniMessage().deserialize(message,
+                Placeholder.component("pos", Component.text(pos))
+        );
     }
 
     public static Component bossbarText(int score) {
-        Component component = Component.text("Jump & Run | Score: ")
-                .append(Component.text(score));
+        String message = JumpNRun.getInstance().getMessages().get().getString("bossbar-text");
 
-        return component;
+        return MiniMessage.miniMessage().deserialize(message,
+                Placeholder.component("score", Component.text(score))
+        );
+    }
+
+    public static Component getOutdatedMessage() {
+        String message = JumpNRun.getInstance().getMessages().get().getString("outdated-message");
+
+        return MiniMessage.miniMessage().deserialize(message);
     }
 
     public static Component leaderboardText(LinkedHashMap<OfflinePlayer, Integer> players) {
-        Component component = Component.text("---- Leaderboard ----\n");
+        FileConfiguration langConf = JumpNRun.getInstance().getMessages().get();
+
+        Component component = MiniMessage.miniMessage().deserialize(langConf.getString("leaderboard.header") + "\n");
 
         int position = 1;
         for (OfflinePlayer player : players.keySet()) {
@@ -86,27 +112,21 @@ public class Message {
                 name = "???";
             }
 
-            component = component.append(Component.text(position, getLeaderboardPositionColour(position)))
-                    .append(Component.text(". ", getLeaderboardPositionColour(position)))
-                    .append(Component.text(name, NamedTextColor.GRAY))
-                    .append(Component.text(" (", NamedTextColor.GRAY))
-                    .append(Component.text(score, NamedTextColor.LIGHT_PURPLE))
-                    .append(Component.text(")\n", NamedTextColor.GRAY));
+            component = component.append(MiniMessage.miniMessage().deserialize(langConf.getString("leaderboard.entry")+"\n",
+                    Placeholder.component("position", Component.text(position, getLeaderboardPositionColour(position))),
+                    Placeholder.component("score", Component.text(score)),
+                    Placeholder.component("player", Component.text(name))
+            ));
 
             position++;
         }
 
-        component = component.append(Component.text("----------|----------", NamedTextColor.WHITE));
+        component = component.append(MiniMessage.miniMessage().deserialize(langConf.getString("leaderboard.footer")));
 
         return component;
     }
 
-    public static Component getOutdatedMessage() {
-        String url = "https://modrinth.com/project/" + JumpNRun.getInstance().getModrinthId();
-
-        return Component.text("There is a new version of JumpNRun available. You can download it on ", NamedTextColor.GRAY)
-                .append( Component.text("Modrinth", NamedTextColor.LIGHT_PURPLE).clickEvent(ClickEvent.openUrl(url)) );
-    }
+    // --------------------------------------------------------------------------------------------------------------------
 
     private static TextColor getLeaderboardPositionColour(int position) {
         switch (position) {
