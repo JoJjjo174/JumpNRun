@@ -3,6 +3,7 @@ package at.jonathans.jumpNRun;
 import at.jonathans.jumpNRun.commands.JumpNRunCommand;
 import at.jonathans.jumpNRun.listeners.*;
 import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
 import org.bukkit.DyeColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -57,6 +58,7 @@ public final class JumpNRun extends JavaPlugin {
         database = new Database();
 
         Metrics metrics = new Metrics(this, BSTATS_PLUGIN_ID);
+        registerMetrics(metrics);
 
         if (getConfig().getBoolean("check-updates")) {
             String newestVersion = getNewestVersion();
@@ -79,25 +81,19 @@ public final class JumpNRun extends JavaPlugin {
         database.closeConnection();
     }
 
-    public static JumpNRun getInstance() {
-        return instance;
+    private void registerMetrics(Metrics metrics) {
+
+        metrics.addCustomChart(new SimplePie("database", () -> {
+            return getConfig().getString("database.type").toLowerCase();
+        }));
+
+        metrics.addCustomChart(new SimplePie("block", () -> {
+            return getConfig().getString("block-material").toLowerCase();
+        }));
+
     }
 
-    public HashMap<Player, JumpSession> getJumpSessions() {
-        return jumpSessions;
-    }
-
-    public Database getDatabase() {
-        return database;
-    }
-
-    public DyeColor getRandomColour() {
-        Random rng = new Random();
-        DyeColor[] colours =  DyeColor.values();
-        return colours[rng.nextInt(colours.length)];
-    }
-
-    public String getNewestVersion() {
+    private String getNewestVersion() {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.modrinth.com/v2/project/" + MODRINTH_PLUGIN_ID + "/version"))
@@ -160,6 +156,24 @@ public final class JumpNRun extends JavaPlugin {
         saveConfig();
 
         getLogger().info("Updated config to the newest version");
+    }
+
+    public static JumpNRun getInstance() {
+        return instance;
+    }
+
+    public HashMap<Player, JumpSession> getJumpSessions() {
+        return jumpSessions;
+    }
+
+    public Database getDatabase() {
+        return database;
+    }
+
+    public DyeColor getRandomColour() {
+        Random rng = new Random();
+        DyeColor[] colours =  DyeColor.values();
+        return colours[rng.nextInt(colours.length)];
     }
 
     public boolean isOutdated() {
