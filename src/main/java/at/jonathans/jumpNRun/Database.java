@@ -1,5 +1,7 @@
 package at.jonathans.jumpNRun;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -13,7 +15,7 @@ import java.util.UUID;
 
 public class Database {
 
-    private Connection connection;
+    private HikariDataSource dataSource;
     private HashMap<UUID, Integer> cache;
     private LinkedHashMap<UUID, Integer> leaderboardCache;
     private Instant leaderboardCacheAge;
@@ -24,22 +26,25 @@ public class Database {
 
         JumpNRun plugin = JumpNRun.getInstance();
 
-        try {
-            String databaseType = plugin.getConfig().getString("database.type");
-            if (databaseType.equalsIgnoreCase("sqlite")) {
+        HikariConfig hikariConfig = new HikariConfig();
+        String databaseType = plugin.getConfig().getString("database.type");
+
+        switch (databaseType.toLowerCase()) {
+            case "sqlite":
                 File dataBaseFile = new File(plugin.getDataFolder(), "data.db");
-                String url = "jdbc:sqlite:" + dataBaseFile.getAbsolutePath();
-                connection = DriverManager.getConnection(url);
+                hikariConfig.setJdbcUrl("jdbc:sqlite:" + dataBaseFile.getAbsolutePath());
+                break;
 
-            } else {
-                String url = "jdbc:mysql://" + plugin.getConfig().getString("database.credentials.url") + "/" + plugin.getConfig().getString("database.credentials.database");
-                String username = plugin.getConfig().getString("database.credentials.username");
-                String password = plugin.getConfig().getString("database.credentials.password");
+            case "mysql":
+                hikariConfig.setJdbcUrl("jdbc:mysql://" + plugin.getConfig().getString("database.credentials.url") + "/" + plugin.getConfig().getString("database.credentials.database"));
+                hikariConfig.setUsername(plugin.getConfig().getString("database.credentials.username"));
+                hikariConfig.setPassword(plugin.getConfig().getString("database.credentials.password"));
+                break;
+        }
 
-                connection = DriverManager.getConnection(url, username, password);
-            }
+        dataSource = new HikariDataSource(hikariConfig);
 
-            Statement statement = connection.createStatement();
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE IF NOT EXISTS highscores(uuid VARCHAR(36) PRIMARY KEY, score INTEGER);");
 
         } catch (SQLException exception) {
@@ -50,12 +55,7 @@ public class Database {
     }
 
     public void closeConnection() {
-        try {
-            connection.close();
-
-        } catch (SQLException exception) {
-            JumpNRun.getInstance().getLogger().warning("Failed to close database connection: " + exception.getMessage());
-        }
+        dataSource.close();
     }
 
     public boolean brokeHighscore(Player player, int score) {
@@ -67,23 +67,25 @@ public class Database {
 
         cache.put(uuid, score);
 
-        try {
+        try (Connection connection = dataSource.getConnection()) {
             if (oldHighscore == -1) {
                 String sql = "INSERT INTO highscores (uuid, score) VALUES (?, ?);";
-                PreparedStatement statement = connection.prepareStatement(sql);
-                statement.setString(1, uuid.toString());
-                statement.setInt(2, score);
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setString(1, uuid.toString());
+                    statement.setInt(2, score);
 
-                statement.executeUpdate();
+                    statement.executeUpdate();
+                }
+
             } else {
                 String sql = "UPDATE highscores SET score = ? WHERE uuid = ?;";
-                PreparedStatement statement = connection.prepareStatement(sql);
-                statement.setInt(1, score);
-                statement.setString(2, uuid.toString());
+                try (PreparedStatement statement = connection.prepareStatement(sql);) {
+                    statement.setInt(1, score);
+                    statement.setString(2, uuid.toString());
 
-                statement.executeUpdate();
+                    statement.executeUpdate();
+                }
             }
-
         } catch (SQLException exception) {
             JumpNRun.getInstance().getLogger().severe("Failed to update highscore: " + exception.getMessage());
         }
@@ -98,9 +100,8 @@ public class Database {
 
         UUID uuid = player.getUniqueId();
         if (!cache.containsKey(uuid)) {
-            try {
-                String sql = "SELECT score FROM highscores WHERE uuid = ? LIMIT 1;";
-                PreparedStatement statement = connection.prepareStatement(sql);
+            String sql = "SELECT score FROM highscores WHERE uuid = ? LIMIT 1;";
+            try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, uuid.toString());
                 ResultSet results = statement.executeQuery();
 
@@ -121,9 +122,8 @@ public class Database {
 
     public LinkedHashMap<OfflinePlayer, Integer> getLeaderboard() {
         if (Instant.now().isAfter(leaderboardCacheAge.plusSeconds(300))) {
-            try {
-                String sql = "SELECT uuid, score FROM highscores ORDER BY score DESC LIMIT 10;";
-                Statement statement = connection.createStatement();
+            String sql = "SELECT uuid, score FROM highscores ORDER BY score DESC LIMIT 10;";
+            try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
                 ResultSet results = statement.executeQuery(sql);
 
                 LinkedHashMap<UUID, Integer> leaderboard = new LinkedHashMap<>();

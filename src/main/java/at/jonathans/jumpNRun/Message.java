@@ -21,13 +21,13 @@ public class Message {
     }
 
     public static Component notSetUpYet() {
-        String message = JumpNRun.getInstance().getMessages().get().getString("broke-highscore");
+        String message = JumpNRun.getInstance().getMessages().get().getString("not-set-up-yet");
 
         return MiniMessage.miniMessage().deserialize(message);
     }
 
     public static Component brokeHighscoreMessage(int score) {
-        String message = JumpNRun.getInstance().getMessages().get().getString("not-set-up-yet");
+        String message = JumpNRun.getInstance().getMessages().get().getString("broke-highscore");
 
         return MiniMessage.miniMessage().deserialize(message,
                 Placeholder.component("score", Component.text(score))
