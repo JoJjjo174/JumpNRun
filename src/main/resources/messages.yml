@@ -27,6 +27,8 @@ bossbar-text: "Jump & Run | Score: <score>"
 
 outdated-message: "<gray>There is a new version of JumpNRun available. You can download it on <click:open_url:https://modrinth.com/project/9W6kSxB3><light_purple>Modrinth</click>"
 
+leaderboard-loading: "<gray>Loading leaderboard..."
+
 leaderboard:
   header: "---- Leaderboard ----"
 

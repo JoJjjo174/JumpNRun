@@ -10,6 +10,7 @@ import java.io.File;
 import java.sql.*;
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -132,37 +133,45 @@ public class Database {
         });
     }
 
-    public LinkedHashMap<OfflinePlayer, Integer> getLeaderboard() {
-        if (Instant.now().isAfter(leaderboardCacheAge.plusSeconds(300))) {
-            String sql = "SELECT uuid, score FROM highscores ORDER BY score DESC LIMIT 10;";
-            try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
-                ResultSet results = statement.executeQuery(sql);
+    public CompletableFuture<LinkedHashMap<OfflinePlayer, Integer>> getLeaderboard() {
+        return CompletableFuture.supplyAsync(() -> {
 
-                LinkedHashMap<UUID, Integer> leaderboard = new LinkedHashMap<>();
+            if (leaderboardCacheOutdated()) {
+                String sql = "SELECT uuid, score FROM highscores ORDER BY score DESC LIMIT 10;";
+                try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
+                    ResultSet results = statement.executeQuery(sql);
 
-                while (results.next()) {
-                    UUID uuid = UUID.fromString(results.getString("uuid"));
-                    Integer score = results.getInt("score");
+                    LinkedHashMap<UUID, Integer> leaderboard = new LinkedHashMap<>();
 
-                    cache.put(uuid, score);
-                    leaderboard.put(uuid, score);
+                    while (results.next()) {
+                        UUID uuid = UUID.fromString(results.getString("uuid"));
+                        Integer score = results.getInt("score");
+
+                        cache.put(uuid, score);
+                        leaderboard.put(uuid, score);
+                    }
+
+                    leaderboardCache = leaderboard;
+                    leaderboardCacheAge = Instant.now();
+
+                } catch (SQLException exception) {
+                    JumpNRun.getInstance().getLogger().severe("Failed to fetch leaderboard from database: " + exception.getMessage());
                 }
-
-                leaderboardCache = leaderboard;
-                leaderboardCacheAge = Instant.now();
-
-            } catch (SQLException exception) {
-                JumpNRun.getInstance().getLogger().severe("Failed to fetch leaderboard from database: " + exception.getMessage());
             }
-        }
 
-        LinkedHashMap<OfflinePlayer, Integer> returnLeaderboard = new LinkedHashMap<>();
+            LinkedHashMap<OfflinePlayer, Integer> returnLeaderboard = new LinkedHashMap<>();
 
-        for (UUID uuid : leaderboardCache.keySet()) {
-            returnLeaderboard.put(Bukkit.getOfflinePlayer(uuid), leaderboardCache.get(uuid));
-        }
+            for (UUID uuid : leaderboardCache.keySet()) {
+                returnLeaderboard.put(Bukkit.getOfflinePlayer(uuid), leaderboardCache.get(uuid));
+            }
 
-        return returnLeaderboard;
+            return returnLeaderboard;
+
+        });
+    }
+
+    public boolean leaderboardCacheOutdated() {
+        return Instant.now().isAfter(leaderboardCacheAge.plusSeconds(300));
     }
 
 }

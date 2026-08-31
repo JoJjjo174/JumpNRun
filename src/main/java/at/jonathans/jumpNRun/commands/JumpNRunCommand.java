@@ -1,5 +1,6 @@
 package at.jonathans.jumpNRun.commands;
 
+import at.jonathans.jumpNRun.Database;
 import at.jonathans.jumpNRun.JumpNRun;
 import at.jonathans.jumpNRun.JumpSession;
 import at.jonathans.jumpNRun.Message;
@@ -69,16 +70,23 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
                     return true;
 
                 case "leaderboard":
-                    LinkedHashMap<OfflinePlayer, Integer> leaderboard = plugin.getDatabase().getLeaderboard();
-
-                    Component leaderboardComponent = Message.leaderboardText(leaderboard);
-
-                    if (leaderboardComponent.toString().isEmpty()) {
-                        commandSender.sendMessage(Message.emptyLeaderboard());
-                        return true;
+                    if (plugin.getDatabase().leaderboardCacheOutdated()) {
+                        commandSender.sendMessage(Message.leaderboardLoading());
                     }
 
-                    commandSender.sendMessage(leaderboardComponent);
+                    CompletableFuture<LinkedHashMap<OfflinePlayer, Integer>> leaderboardFuture = plugin.getDatabase().getLeaderboard();
+
+                    leaderboardFuture.thenAccept(result -> {
+                        Component leaderboardComponent = Message.leaderboardText(result);
+
+                        if (leaderboardComponent.toString().isEmpty()) {
+                            commandSender.sendMessage(Message.emptyLeaderboard());
+                            return;
+                        }
+
+                        commandSender.sendMessage(leaderboardComponent);
+                    });
+
                     return true;
 
                 case "reload":

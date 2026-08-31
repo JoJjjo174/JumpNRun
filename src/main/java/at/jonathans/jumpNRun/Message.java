@@ -98,6 +98,12 @@ public class Message {
         return MiniMessage.miniMessage().deserialize(message);
     }
 
+    public static Component leaderboardLoading() {
+        String message = JumpNRun.getInstance().getMessages().get().getString("leaderboard-loading");
+
+        return MiniMessage.miniMessage().deserialize(message);
+    }
+
     public static Component leaderboardText(LinkedHashMap<OfflinePlayer, Integer> players) {
         FileConfiguration langConf = JumpNRun.getInstance().getMessages().get();
 
