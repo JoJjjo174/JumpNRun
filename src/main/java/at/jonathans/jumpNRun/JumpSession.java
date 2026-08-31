@@ -14,6 +14,7 @@ import org.bukkit.util.Vector;
 
 import java.util.Collection;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 
 public class JumpSession {
 
@@ -156,7 +157,7 @@ public class JumpSession {
         return newLocation;
     }
 
-    public void endSession() {
+    public void endSession(boolean runSync) {
         currentBlock.setType(Material.AIR);
         nextBlock.setType(Material.AIR);
         hologramBlock.remove();
@@ -176,19 +177,27 @@ public class JumpSession {
             player.addPotionEffects(originalEffects);
         }
 
-        if (plugin.getDatabase().brokeHighscore(player, score)) {
-            player.sendMessage(Message.brokeHighscoreMessage(score));
+        CompletableFuture<Boolean> brokeHighscoreFuture = plugin.getDatabase().brokeHighscore(player, score);
 
-        } else {
-            int highscore = plugin.getDatabase().getHighscore(player);
-            player.sendMessage(Message.scoreMessage(score, highscore));
+        if (runSync) {
+            brokeHighscoreFuture.join();
+            return;
         }
+
+        brokeHighscoreFuture.thenAccept(result -> {
+            if (result) {
+                player.sendMessage(Message.brokeHighscoreMessage(score));
+            } else {
+                int highscore = plugin.getDatabase().getHighscore(player).join();
+                player.sendMessage(Message.scoreMessage(score, highscore));
+            }
+        });
 
     }
 
     public void checkNextJump() {
         if (!isInPlayerBounds(player.getLocation())) {
-            endSession();
+            endSession(false);
             return;
         }
 

@@ -17,7 +17,7 @@ public class MoveListener implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-        if (!plugin.getJumpSessions().containsKey(event.getPlayer())) {
+        if (!event.hasChangedPosition() || !plugin.getJumpSessions().containsKey(event.getPlayer())) {
             return;
         }
 

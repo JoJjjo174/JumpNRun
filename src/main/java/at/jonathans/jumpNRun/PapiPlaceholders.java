@@ -35,7 +35,7 @@ public class PapiPlaceholders extends PlaceholderExpansion {
 
         switch (params.toLowerCase()) {
             case "highscore":
-                return String.valueOf(plugin.getDatabase().getHighscore(player));
+                return String.valueOf(plugin.getDatabase().getHighscore(player).join());
 
             case "score":
                 if (!plugin.getJumpSessions().containsKey(player)) {

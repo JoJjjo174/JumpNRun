@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class JumpNRunCommand implements CommandExecutor, TabExecutor {
 
@@ -55,13 +56,16 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
                         targetPlayer = player;
                     }
 
-                    int highscore = plugin.getDatabase().getHighscore(targetPlayer);
-                    if (highscore == -1) {
-                        commandSender.sendMessage(Message.noHighscoreYet());
-                        return true;
-                    }
+                    CompletableFuture<Integer> highscoreFuture = plugin.getDatabase().getHighscore(targetPlayer);
 
-                    commandSender.sendMessage(Message.highscoreMessage(targetPlayer, highscore));
+                    highscoreFuture.thenAccept(result -> {
+                        if (result == -1) {
+                            commandSender.sendMessage(Message.noHighscoreYet());
+                            return;
+                        }
+                        commandSender.sendMessage(Message.highscoreMessage(targetPlayer, result));
+                    });
+
                     return true;
 
                 case "leaderboard":

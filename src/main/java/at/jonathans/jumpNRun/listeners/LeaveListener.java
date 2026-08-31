@@ -21,7 +21,7 @@ public class LeaveListener implements Listener {
         }
 
         JumpSession jumpSession = plugin.getJumpSessions().get(event.getPlayer());
-        jumpSession.endSession();
+        jumpSession.endSession(false);
     }
 
 }

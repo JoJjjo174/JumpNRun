@@ -9,19 +9,20 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.sql.*;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Database {
 
     private HikariDataSource dataSource;
-    private HashMap<UUID, Integer> cache;
+    private ConcurrentHashMap<UUID, Integer> cache;
     private LinkedHashMap<UUID, Integer> leaderboardCache;
     private Instant leaderboardCacheAge;
 
     public Database() {
-        cache = new HashMap<>();
+        cache = new ConcurrentHashMap<>();
         leaderboardCacheAge = Instant.ofEpochSecond(0);
 
         JumpNRun plugin = JumpNRun.getInstance();
@@ -58,66 +59,77 @@ public class Database {
         dataSource.close();
     }
 
-    public boolean brokeHighscore(Player player, int score) {
-        UUID uuid = player.getUniqueId();
-        int oldHighscore = getHighscore(player);
-        if (oldHighscore >= score) {
-            return false;
-        }
+    public CompletableFuture<Boolean> brokeHighscore(Player player, int score) {
+        return CompletableFuture.supplyAsync(() -> {
 
-        cache.put(uuid, score);
+            UUID uuid = player.getUniqueId();
 
-        try (Connection connection = dataSource.getConnection()) {
-            if (oldHighscore == -1) {
-                String sql = "INSERT INTO highscores (uuid, score) VALUES (?, ?);";
-                try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                    statement.setString(1, uuid.toString());
-                    statement.setInt(2, score);
+            CompletableFuture<Integer> oldHighscoreFuture = getHighscore(player);
+            int oldHighscore = oldHighscoreFuture.join();
 
-                    statement.executeUpdate();
-                }
-
-            } else {
-                String sql = "UPDATE highscores SET score = ? WHERE uuid = ?;";
-                try (PreparedStatement statement = connection.prepareStatement(sql);) {
-                    statement.setInt(1, score);
-                    statement.setString(2, uuid.toString());
-
-                    statement.executeUpdate();
-                }
+            if (oldHighscore >= score) {
+                return false;
             }
-        } catch (SQLException exception) {
-            JumpNRun.getInstance().getLogger().severe("Failed to update highscore: " + exception.getMessage());
-        }
 
-        return true;
+            cache.put(uuid, score);
+
+            try (Connection connection = dataSource.getConnection()) {
+                if (oldHighscore == -1) {
+                    String sql = "INSERT INTO highscores (uuid, score) VALUES (?, ?);";
+                    try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                        statement.setString(1, uuid.toString());
+                        statement.setInt(2, score);
+
+                        statement.executeUpdate();
+                    }
+
+                } else {
+                    String sql = "UPDATE highscores SET score = ? WHERE uuid = ?;";
+                    try (PreparedStatement statement = connection.prepareStatement(sql);) {
+                        statement.setInt(1, score);
+                        statement.setString(2, uuid.toString());
+
+                        statement.executeUpdate();
+                    }
+                }
+            } catch (SQLException exception) {
+                JumpNRun.getInstance().getLogger().severe("Failed to update highscore: " + exception.getMessage());
+            }
+
+            return true;
+
+        });
     }
 
-    public int getHighscore(OfflinePlayer player) {
-        if (cache.size() >= 1000) {
-            cache.clear();
-        }
+    public CompletableFuture<Integer> getHighscore(OfflinePlayer player) {
+        return CompletableFuture.supplyAsync(() -> {
 
-        UUID uuid = player.getUniqueId();
-        if (!cache.containsKey(uuid)) {
-            String sql = "SELECT score FROM highscores WHERE uuid = ? LIMIT 1;";
-            try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, uuid.toString());
-                ResultSet results = statement.executeQuery();
+            if (cache.size() >= 1000) {
+                cache.clear();
+            }
 
-                if (results.next()) {
-                    cache.put(uuid, results.getInt("score"));
-                } else {
+            UUID uuid = player.getUniqueId();
+            if (!cache.containsKey(uuid)) {
+                String sql = "SELECT score FROM highscores WHERE uuid = ? LIMIT 1;";
+                try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.setString(1, uuid.toString());
+                    ResultSet results = statement.executeQuery();
+
+                    if (results.next()) {
+                        cache.put(uuid, results.getInt("score"));
+                    } else {
+                        cache.put(uuid, -1);
+                    }
+
+                } catch (SQLException exception) {
+                    JumpNRun.getInstance().getLogger().severe("Failed to fetch highscore from database: " + exception.getMessage());
                     cache.put(uuid, -1);
                 }
-
-            } catch (SQLException exception) {
-                JumpNRun.getInstance().getLogger().severe("Failed to fetch highscore from database: " + exception.getMessage());
-                cache.put(uuid, -1);
             }
-        }
 
-        return cache.get(uuid);
+            return cache.get(uuid);
+
+        });
     }
 
     public LinkedHashMap<OfflinePlayer, Integer> getLeaderboard() {
