@@ -104,6 +104,12 @@ public class Message {
         return MiniMessage.miniMessage().deserialize(message);
     }
 
+    public static Component noSpace() {
+        String message = JumpNRun.getInstance().getMessages().get().getString("no-space");
+
+        return MiniMessage.miniMessage().deserialize(message);
+    }
+
     public static Component leaderboardText(LinkedHashMap<OfflinePlayer, Integer> players) {
         FileConfiguration langConf = JumpNRun.getInstance().getMessages().get();
 

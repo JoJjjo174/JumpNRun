@@ -29,6 +29,8 @@ outdated-message: "<gray>There is a new version of JumpNRun available. You can d
 
 leaderboard-loading: "<gray>Loading leaderboard..."
 
+no-space: "<red>Your Jump & Run was cancelled, as there was no space to generate further blocks"
+
 leaderboard:
   header: "---- Leaderboard ----"
 

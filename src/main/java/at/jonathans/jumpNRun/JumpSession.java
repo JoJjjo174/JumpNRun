@@ -49,10 +49,29 @@ public class JumpSession {
         currentBlock = generateStartingLocation().getBlock();
         currentBlock.setType(colourMaterial);
 
-        nextBlock = pos1.getWorld().getBlockAt( generateLocation(currentBlock.getLocation()) );
-        nextBlock.setType(colourMaterial);
+        Location nextBlockLocation;
+        if ((nextBlockLocation = generateLocation(currentBlock.getLocation())) != null) {
+            nextBlock = pos1.getWorld().getBlockAt(nextBlockLocation);
+            nextBlock.setType(colourMaterial);
 
-        hologramBlock = createHologram(generateLocation(nextBlock.getLocation()), colour);
+        } else {
+            currentBlock.setType(Material.AIR);
+            player.sendMessage(Message.noSpace());
+            return;
+        }
+
+        Location hologramLocation;
+        if ((hologramLocation = generateLocation(nextBlock.getLocation())) != null) {
+            hologramBlock = createHologram(hologramLocation, colour);
+
+        } else {
+            currentBlock.setType(Material.AIR);
+            nextBlock.setType(Material.AIR);
+            player.sendMessage(Message.noSpace());
+            return;
+        }
+
+
 
         if (plugin.getConfig().getBoolean("enable-bossbar")) {
             scoreBar = BossBar.bossBar(Message.bossbarText(score), 1f, getBossBarColor(colour), BossBar.Overlay.PROGRESS);
@@ -96,11 +115,17 @@ public class JumpSession {
         );
     }
 
-    private void generateNextBlock() {
+    private boolean generateNextBlock() {
         nextBlock = pos1.getWorld().getBlockAt(hologramBlock.getLocation());
         nextBlock.setType(colourMaterial);
 
-        hologramBlock.teleport(generateLocation(nextBlock.getLocation()));
+        Location nextLocation = generateLocation(nextBlock.getLocation());
+        if (nextLocation != null) {
+            hologramBlock.teleport(nextLocation);
+            return true;
+        }
+
+        return false;
     }
 
     private Vector generateEasyJump() {
@@ -144,17 +169,18 @@ public class JumpSession {
         double hardChance = getHardJumpChance();
         boolean hardJump = hardChance >= rng.nextDouble();
 
-        int tries = 0;
         Location newLocation;
-        do {
+        for (int i = 0; i < 100; i++) {
             newLocation = from.clone().add(
                     hardJump ? generateHardJump() : generateEasyJump()
             );
-            tries++;
 
-        } while ((!pos1.getWorld().getBlockAt(newLocation).getType().equals(Material.AIR) || !isInBounds(pos1, pos2, newLocation)) && tries < 100);
+            if ( pos1.getWorld().getBlockAt(newLocation).getType().equals(Material.AIR) && isInBounds(pos1, pos2, newLocation) ) {
+                return newLocation;
+            }
+        }
 
-        return newLocation;
+        return null;
     }
 
     public void endSession(boolean runSync) {
@@ -207,7 +233,6 @@ public class JumpSession {
 
         currentBlock.setType(Material.AIR);
         currentBlock = nextBlock;
-        generateNextBlock();
         score++;
         if (scoreBar != null) {
             scoreBar.name(Message.bossbarText(score));
@@ -220,6 +245,11 @@ public class JumpSession {
                 1.0f
         );
         player.playSound(expSound);
+
+        if (!generateNextBlock()) {
+            player.sendMessage(Message.noSpace());
+            endSession(false);
+        }
     }
 
     private boolean onNextBlock() {
