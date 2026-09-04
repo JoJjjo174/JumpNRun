@@ -130,16 +130,16 @@ public class JumpSession {
     }
 
     private Vector generateEasyJump() {
-        int[] xzOffset = {-3, -2, 2, 3};
-        int[] yOffset = {-1, 0, 1};
-
         Random rng = new Random();
 
-        return new Vector(
-                xzOffset[rng.nextInt(xzOffset.length)],
-                yOffset[rng.nextInt(yOffset.length)],
-                xzOffset[rng.nextInt(xzOffset.length)]
-        );
+        double rotation = Math.toRadians(rng.nextDouble(360));
+        int length = rng.nextInt(3,5);
+
+        double x = Math.round(Math.sin(rotation) * length);
+        double y = rng.nextInt(-1,2);
+        double z = Math.round(Math.cos(rotation) * length);
+
+        return new Vector(x, y, z);
     }
 
     private Vector generateHardJump() {
