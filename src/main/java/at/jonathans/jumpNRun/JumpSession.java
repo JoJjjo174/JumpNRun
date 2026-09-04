@@ -16,8 +16,6 @@ import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
-// !!! Currently Spawning hologram whether enabled or not in config
-
 public class JumpSession {
 
     private Player player;
@@ -64,8 +62,11 @@ public class JumpSession {
         nextBlock.setType(colourMaterial);
 
         hologramBlock = new HologramBlock(player, colour);
-        hologramBlock.spawn(hologramLocation);
-
+        if(plugin.getConfig().getBoolean("hologram-block")) {
+            hologramBlock.spawn(hologramLocation);
+        } else {
+            hologramBlock.teleport(hologramLocation);
+        }
 
         if (plugin.getConfig().getBoolean("enable-bossbar")) {
             scoreBar = BossBar.bossBar(Message.bossbarText(score), 1f, getBossBarColor(colour), BossBar.Overlay.PROGRESS);

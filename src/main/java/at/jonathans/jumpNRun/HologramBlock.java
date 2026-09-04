@@ -26,21 +26,24 @@ public class HologramBlock {
     private UUID fakeUuid;
 
     private Location location;
-
+    private boolean spawned;
 
     public HologramBlock(Player player, DyeColor colour) {
         this.player = player;
         this.colour = colour;
 
-        this.entityId = SpigotReflectionUtil.generateEntityId();
-        this.fakeUuid = UUID.randomUUID();
+        entityId = SpigotReflectionUtil.generateEntityId();
+        fakeUuid = UUID.randomUUID();
+
+        spawned = false;
     }
 
     public void spawn(Location location) {
-        if (this.location != null) {
+        this.location = location;
+        if (spawned) {
             return;
         }
-        this.location = location;
+        spawned = true;
 
         WrapperPlayServerSpawnEntity spawnEntityPacket = new WrapperPlayServerSpawnEntity(
                 entityId,
@@ -72,10 +75,10 @@ public class HologramBlock {
     }
 
     public void teleport(Location location) {
-        if (this.location == null) {
+        this.location = location;
+        if (!spawned) {
             return;
         }
-        this.location = location;
 
         WrapperPlayServerEntityTeleport teleportPacket = new WrapperPlayServerEntityTeleport(
                 entityId,
@@ -87,10 +90,10 @@ public class HologramBlock {
     }
 
     public void despawn() {
-        if (location == null) {
+        if (!spawned) {
             return;
         }
-        this.location = null;
+        spawned = false;
 
         WrapperPlayServerDestroyEntities despawnPacket = new WrapperPlayServerDestroyEntities(entityId);
         PacketEvents.getAPI().getPlayerManager().sendPacket(player, despawnPacket);
