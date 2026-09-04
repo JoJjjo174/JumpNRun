@@ -48,31 +48,24 @@ public class JumpSession {
         pos1 = plugin.getConfig().getLocation("pos1");
         pos2 = plugin.getConfig().getLocation("pos2");
 
-        currentBlock = generateStartingLocation().getBlock();
+        Location startingLocation = generateStartingLocation();
+        Location nextLocation = generateLocation(startingLocation);
+        Location hologramLocation = generateLocation(nextLocation);
+
+        if (startingLocation == null || nextLocation == null || hologramLocation == null) {
+            player.sendMessage(Message.noSpace());
+            return;
+        }
+
+        currentBlock = startingLocation.getBlock();
         currentBlock.setType(colourMaterial);
 
-        Location nextBlockLocation;
-        if ((nextBlockLocation = generateLocation(currentBlock.getLocation())) != null) {
-            nextBlock = pos1.getWorld().getBlockAt(nextBlockLocation);
-            nextBlock.setType(colourMaterial);
+        nextBlock = nextLocation.getBlock();
+        nextBlock.setType(colourMaterial);
 
-        } else {
-            currentBlock.setType(Material.AIR);
-            player.sendMessage(Message.noSpace());
-            return;
-        }
+        hologramBlock = new HologramBlock(player, colour);
+        hologramBlock.spawn(hologramLocation);
 
-        Location hologramLocation;
-        if ((hologramLocation = generateLocation(nextBlock.getLocation())) != null) {
-            hologramBlock = new HologramBlock(player, colour);
-            hologramBlock.spawn(hologramLocation);
-
-        } else {
-            currentBlock.setType(Material.AIR);
-            nextBlock.setType(Material.AIR);
-            player.sendMessage(Message.noSpace());
-            return;
-        }
 
         if (plugin.getConfig().getBoolean("enable-bossbar")) {
             scoreBar = BossBar.bossBar(Message.bossbarText(score), 1f, getBossBarColor(colour), BossBar.Overlay.PROGRESS);
@@ -108,12 +101,19 @@ public class JumpSession {
         int maxZ = (int) Math.max( pos1.z(), pos2.z() );
 
         Random rng = new Random();
-        return new Location(
-                pos1.getWorld(),
-                rng.nextInt(minX, maxX+1),
-                rng.nextInt(minY, maxY+1),
-                rng.nextInt(minZ, maxZ+1)
-        );
+        Location location;
+        for (int i = 0; i < 100; i++) {
+            location = new Location(
+                    pos1.getWorld(),
+                    rng.nextInt(minX, maxX+1),
+                    rng.nextInt(minY, maxY+1),
+                    rng.nextInt(minZ, maxZ+1)
+            );
+            if (location.getBlock().getType().equals(Material.AIR)) {
+                return location;
+            }
+        }
+        return null;
     }
 
     private boolean generateNextBlock() {
@@ -144,12 +144,9 @@ public class JumpSession {
 
     private Vector generateHardJump() {
         int[][] jumps = {
-                {5,0,0},
-                {0,0,5},
-                {5,0,1},
-                {5,0,2},
-                {1,0,5},
-                {2,0,5}
+                {5,0,0}, {0,0,5},
+                {5,0,1}, {1,0,5},
+                {5,0,2}, {2,0,5}
         };
         int[] signs = {-1, 1};
 
@@ -165,6 +162,10 @@ public class JumpSession {
     }
 
     private Location generateLocation(Location from) {
+        if (from == null) {
+            return null;
+        }
+
         Random rng = new Random();
 
         double hardChance = getHardJumpChance();
@@ -176,7 +177,7 @@ public class JumpSession {
                     hardJump ? generateHardJump() : generateEasyJump()
             );
 
-            if ( pos1.getWorld().getBlockAt(newLocation).getType().equals(Material.AIR) && isInBounds(pos1, pos2, newLocation) ) {
+            if ( pos1.getWorld().getBlockAt(newLocation).getType().equals(Material.AIR) && isInBounds(pos1, pos2, newLocation)) {
                 return newLocation;
             }
         }
