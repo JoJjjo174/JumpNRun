@@ -130,15 +130,19 @@ public class JumpSession {
         return false;
     }
 
-    private Vector generateEasyJump() {
+    private Vector generateEasyJump(double playerYaw, int tryNumber) {
         Random rng = new Random();
 
-        double rotation = Math.toRadians(rng.nextDouble(360));
+        double playerRotation = ((-playerYaw % 360.0) + 360.0) % 360.0;
+        double allowedDifference = Math.min(90 + tryNumber*27.0, 360) / 2;
+        double rotation = rng.nextDouble(playerRotation-allowedDifference, playerRotation+allowedDifference);
+        double rotationRadians = Math.toRadians(rotation);
+
         int length = rng.nextInt(3,5);
 
-        double x = Math.round(Math.sin(rotation) * length);
+        double x = Math.round(Math.sin(rotationRadians) * length);
         double y = rng.nextInt(-1,2);
-        double z = Math.round(Math.cos(rotation) * length);
+        double z = Math.round(Math.cos(rotationRadians) * length);
 
         return new Vector(x, y, z);
     }
@@ -175,7 +179,7 @@ public class JumpSession {
         Location newLocation;
         for (int i = 0; i < 100; i++) {
             newLocation = from.clone().add(
-                    hardJump ? generateHardJump() : generateEasyJump()
+                    hardJump ? generateHardJump() : generateEasyJump(player.getYaw(), i)
             );
 
             if ( pos1.getWorld().getBlockAt(newLocation).getType().equals(Material.AIR) && isInBounds(pos1, pos2, newLocation)) {
