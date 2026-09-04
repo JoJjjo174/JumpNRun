@@ -16,6 +16,8 @@ import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
+// !!! Currently Spawning hologram whether enabled or not in config
+
 public class JumpSession {
 
     private Player player;
@@ -33,7 +35,7 @@ public class JumpSession {
 
     private Block currentBlock;
     private Block nextBlock;
-    private Entity hologramBlock;
+    private HologramBlock hologramBlock;
 
     public JumpSession(Player player) {
         this.player = player;
@@ -62,7 +64,8 @@ public class JumpSession {
 
         Location hologramLocation;
         if ((hologramLocation = generateLocation(nextBlock.getLocation())) != null) {
-            hologramBlock = createHologram(hologramLocation, colour);
+            hologramBlock = new HologramBlock(player, colour);
+            hologramBlock.spawn(hologramLocation);
 
         } else {
             currentBlock.setType(Material.AIR);
@@ -70,8 +73,6 @@ public class JumpSession {
             player.sendMessage(Message.noSpace());
             return;
         }
-
-
 
         if (plugin.getConfig().getBoolean("enable-bossbar")) {
             scoreBar = BossBar.bossBar(Message.bossbarText(score), 1f, getBossBarColor(colour), BossBar.Overlay.PROGRESS);
@@ -186,7 +187,7 @@ public class JumpSession {
     public void endSession(boolean runSync) {
         currentBlock.setType(Material.AIR);
         nextBlock.setType(Material.AIR);
-        hologramBlock.remove();
+        hologramBlock.despawn();
 
         JumpNRun plugin = JumpNRun.getInstance();
 
@@ -313,18 +314,6 @@ public class JumpSession {
 
             default -> BossBar.Color.WHITE;
         };
-    }
-
-    private Entity createHologram(Location location, DyeColor colour) {
-        BlockDisplay hologram = (BlockDisplay) pos1.getWorld().spawnEntity(location.toBlockLocation(), EntityType.BLOCK_DISPLAY);
-
-        if (JumpNRun.getInstance().getConfig().getBoolean("hologram-block")) {
-            hologram.setBlock(Material.GLASS.createBlockData());
-            hologram.setGlowing(true);
-            hologram.setGlowColorOverride(colour.getColor());
-        }
-
-        return hologram;
     }
 
     public int getScore() {
