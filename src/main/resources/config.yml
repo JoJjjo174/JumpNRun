@@ -25,7 +25,6 @@ check-updates: true
 
 database:
   # Choose either 'sqlite' or 'mysql'
-  # DO NOT change this value unless you know what you are doing
   type: 'sqlite'
 
   # Only need to be set when a mysql database ist used
