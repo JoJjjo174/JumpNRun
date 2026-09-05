@@ -73,8 +73,10 @@ public class JumpSession {
             player.showBossBar(scoreBar);
         }
 
+        Location teleportLocation = currentBlock.getLocation().add(0,1,0);
+        teleportLocation.setYaw(player.getYaw());
         player.teleport(
-                currentBlock.getLocation().add(0,1,0)
+                teleportLocation
         );
 
         if (plugin.getConfig().getBoolean("disable-hunger")) {
