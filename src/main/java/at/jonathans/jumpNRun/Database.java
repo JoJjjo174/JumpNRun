@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.sql.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.UUID;
@@ -19,7 +20,7 @@ public class Database {
 
     private HikariDataSource dataSource;
     private ConcurrentHashMap<UUID, Integer> cache;
-    private LinkedHashMap<UUID, Integer> leaderboardCache;
+    private ArrayList<LeaderboardEntry> leaderboardCache;
     private Instant leaderboardCacheAge;
 
     public Database() {
@@ -133,22 +134,26 @@ public class Database {
         });
     }
 
-    public CompletableFuture<LinkedHashMap<OfflinePlayer, Integer>> getLeaderboard() {
+    public CompletableFuture<ArrayList<LeaderboardEntry>> getLeaderboard() {
         return CompletableFuture.supplyAsync(() -> {
 
             if (leaderboardCacheOutdated()) {
-                String sql = "SELECT uuid, score FROM highscores ORDER BY score DESC LIMIT 10;";
+                String sql = "SELECT uuid, score FROM highscores ORDER BY score DESC LIMIT 1000;";
                 try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
                     ResultSet results = statement.executeQuery(sql);
 
-                    LinkedHashMap<UUID, Integer> leaderboard = new LinkedHashMap<>();
+                    ArrayList<LeaderboardEntry> leaderboard = new ArrayList<>();
 
+                    int position = 1;
                     while (results.next()) {
                         UUID uuid = UUID.fromString(results.getString("uuid"));
                         Integer score = results.getInt("score");
 
                         cache.put(uuid, score);
-                        leaderboard.put(uuid, score);
+                        leaderboard.add(
+                                new LeaderboardEntry(uuid, score, position)
+                        );
+                        position++;
                     }
 
                     leaderboardCache = leaderboard;
@@ -159,13 +164,7 @@ public class Database {
                 }
             }
 
-            LinkedHashMap<OfflinePlayer, Integer> returnLeaderboard = new LinkedHashMap<>();
-
-            for (UUID uuid : leaderboardCache.keySet()) {
-                returnLeaderboard.put(Bukkit.getOfflinePlayer(uuid), leaderboardCache.get(uuid));
-            }
-
-            return returnLeaderboard;
+            return leaderboardCache;
 
         });
     }

@@ -1,9 +1,6 @@
 package at.jonathans.jumpNRun.commands;
 
-import at.jonathans.jumpNRun.Database;
-import at.jonathans.jumpNRun.JumpNRun;
-import at.jonathans.jumpNRun.JumpSession;
-import at.jonathans.jumpNRun.Message;
+import at.jonathans.jumpNRun.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -74,10 +71,24 @@ public class JumpNRunCommand implements CommandExecutor, TabExecutor {
                         commandSender.sendMessage(Message.leaderboardLoading());
                     }
 
-                    CompletableFuture<LinkedHashMap<OfflinePlayer, Integer>> leaderboardFuture = plugin.getDatabase().getLeaderboard();
+                    int page;
+                    if (strings.length >= 2) {
+                        try {
+                            page = Math.max(Integer.parseInt(strings[1]), 0) - 1;
+                        } catch (NumberFormatException e) {
+                            page = 0;
+                        }
+
+                    } else {
+                        page = 0;
+                    }
+                    int amount = 10;
+                    int from = page * amount;
+
+                    CompletableFuture<ArrayList<LeaderboardEntry>> leaderboardFuture = plugin.getDatabase().getLeaderboard();
 
                     leaderboardFuture.thenAccept(result -> {
-                        Component leaderboardComponent = Message.leaderboardText(result);
+                        Component leaderboardComponent = Message.leaderboardText(result, from, amount);
 
                         if (leaderboardComponent.toString().isEmpty()) {
                             commandSender.sendMessage(Message.emptyLeaderboard());

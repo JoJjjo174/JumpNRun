@@ -6,7 +6,7 @@
 
     <groupId>at.jonathans</groupId>
     <artifactId>jumpnrun</artifactId>
-    <version>1.1-dev</version>
+    <version>1.1</version>
     <packaging>jar</packaging>
 
     <name>jumpnrun</name>

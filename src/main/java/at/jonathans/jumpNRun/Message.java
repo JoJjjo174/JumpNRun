@@ -6,10 +6,12 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public class Message {
@@ -110,27 +112,30 @@ public class Message {
         return MiniMessage.miniMessage().deserialize(message);
     }
 
-    public static Component leaderboardText(LinkedHashMap<OfflinePlayer, Integer> players) {
+    public static Component leaderboardText(ArrayList<LeaderboardEntry> players, int from, int amount) {
         FileConfiguration langConf = JumpNRun.getInstance().getMessages().get();
 
         Component component = MiniMessage.miniMessage().deserialize(langConf.getString("leaderboard.header") + "\n");
 
-        int position = 1;
-        for (OfflinePlayer player : players.keySet()) {
+        for (int i = 0; i < amount; i++) {
+            if (from+i >= players.size()) {
+                break;
+            }
+            LeaderboardEntry playerEntry = players.get(from+i);
+            OfflinePlayer player = Bukkit.getOfflinePlayer(playerEntry.playerUuid());
+
             String name = player.getName();
-            int score = players.get(player);
+            int score = playerEntry.highscore();
 
             if (name == null) {
                 name = "???";
             }
 
             component = component.append(MiniMessage.miniMessage().deserialize(langConf.getString("leaderboard.entry")+"\n",
-                    Placeholder.component("position", Component.text(position, getLeaderboardPositionColour(position))),
+                    Placeholder.component("position", Component.text(playerEntry.position(), getLeaderboardPositionColour(playerEntry.position()))),
                     Placeholder.component("score", Component.text(score)),
                     Placeholder.component("player", Component.text(name))
             ));
-
-            position++;
         }
 
         component = component.append(MiniMessage.miniMessage().deserialize(langConf.getString("leaderboard.footer")));
